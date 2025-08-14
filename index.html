@@ -1,167 +1,241 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>接駁車預約系統 / Shuttle Bus Reservation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接駁車預約系統</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; background: #fff; }
-  .hidden { display: none; }
-  .card { border: 1px solid #ccc; border-radius: 10px; padding: 15px; margin: 10px; display: inline-block; cursor: pointer; width: 220px; color: #ff6600; background: #fff; font-weight: bold; }
-  .card:hover { background: #ffe8d6; }
-  .step-title { font-size: 24px; font-weight: bold; margin-top: 20px; color: #ff6600; }
-  .step-subtitle { font-size: 16px; margin-bottom: 15px; color: #555; }
-  .station-name { white-space: pre-line; font-weight: bold; color: #ff6600; }
-  /* 去程/回程卡片橘底白字 */
-  #directionCards .card { background: #ff6600; color: white; }
-  #directionCards .card:hover { background: #e65c00; }
-  /* Loading 畫面 */
-  #loadingScreen {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255,255,255,0.95); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; z-index: 999;
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #fff6ef;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+    color: #ff7f2a;
+    margin-bottom: 5px;
+  }
+  h4 {
+    text-align: center;
+    color: #555;
+    margin-top: 0;
+    font-weight: normal;
+  }
+
+  .step {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .active {
+    display: block;
+  }
+
+  .button-group, .card-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* 第一頁按鈕 - 橘底白字 */
+  .btn-orange {
+    background-color: #ff7f2a;
+    color: white;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-orange:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  /* 其他步驟卡片 - 白底橘字 */
+  .card {
+    background-color: white;
+    color: #ff7f2a;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    width: 220px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: pre-line; /* 允許換行 */
+  }
+  .card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .card h3 {
+    margin: 0 0 10px;
+    color: #ff7f2a;
+  }
+  .card p {
+    margin: 5px 0;
+    color: #555;
+  }
+
+  .back-btn {
+    margin-top: 20px;
+    background-color: #ccc;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: none;
+    cursor: pointer;
+  }
+  .back-btn:hover {
+    background-color: #bbb;
+  }
+
+  /* Loading 動畫 */
+  #loading {
+    display: none;
+    text-align: center;
+    margin-top: 50px;
+    color: #ff7f2a;
     font-size: 18px;
   }
   .loader {
-    border: 6px solid #f3f3f3; border-top: 6px solid #ff6600;
-    border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
-    margin-bottom: 15px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #ff7f2a;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
   }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
 
-<!-- Loading 畫面 -->
-<div id="loadingScreen">
+<!-- Step 1: 去程 / 回程 -->
+<div id="step1" class="step active">
+  <div class="button-group">
+    <button class="btn-orange" onclick="selectDirection('去程')">🚗 去程<br>Outbound</button>
+    <button class="btn-orange" onclick="selectDirection('回程')">🏠 回程<br>Return</button>
+  </div>
+</div>
+
+<!-- Step 2: 日期 -->
+<div id="step2" class="step">
+  <h2 id="directionTitle"></h2>
+  <h4 id="directionSubtitle"></h4>
+  <div class="card-group" id="dateCards"></div>
+  <button class="back-btn" onclick="goBack(1)">← 返回 Back</button>
+</div>
+
+<!-- Step 3: 班次 -->
+<div id="step3" class="step">
+  <h2 id="dateTitle"></h2>
+  <h4 id="dateSubtitle"></h4>
+  <div class="card-group" id="timeCards"></div>
+  <button class="back-btn" onclick="goBack(2)">← 返回 Back</button>
+</div>
+
+<!-- Step 4: 最終可預約 -->
+<div id="step4" class="step">
+  <h2 id="stationTitle"></h2>
+  <h4 id="stationSubtitle"></h4>
+  <div class="card-group" id="resultCards"></div>
+  <button class="back-btn" onclick="goBack(3)">← 返回 Back</button>
+</div>
+
+<!-- Loading -->
+<div id="loading">
   <div class="loader"></div>
-  <div>資料讀取中...<br>Loading data...</div>
-</div>
-
-<!-- Step 1 -->
-<div id="step1" class="step">
-  <div class="step-title">選擇方向 / Select Direction</div>
-  <div id="directionCards">
-    <div class="card" data-direction="去程">去程<br>Departure</div>
-    <div class="card" data-direction="回程">回程<br>Return (To Hotel)</div>
-  </div>
-</div>
-
-<!-- Step 2 -->
-<div id="step2" class="step hidden">
-  <div class="step-title" id="step2-title"></div>
-  <div class="step-subtitle">請選擇日期 / Please select a date</div>
-  <div id="dateCards"></div>
-</div>
-
-<!-- Step 3 -->
-<div id="step3" class="step hidden">
-  <div class="step-title" id="step3-title"></div>
-  <div class="step-subtitle">
-    下車點 Drop-off: 飯店 / Hotel<br>
-    上車點 Boarding: (請選擇 / Please select)
-  </div>
-  <div id="stationCards"></div>
-</div>
-
-<!-- Step 4 -->
-<div id="step4" class="step hidden">
-  <div class="step-title" id="step4-title"></div>
-  <div id="timeCards"></div>
+  <div>資料讀取中 / Loading data...</div>
 </div>
 
 <script>
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
 let allData = [];
 let selectedDirection = '';
 let selectedDate = '';
-let selectedStation = '';
 
 async function fetchData() {
-  const sheetUrl = 'https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec';
-  const response = await fetch(sheetUrl);
-  if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-  const data = await response.json();
-
-  // 中英文換行
-  data.forEach(r => {
-    if (r["站點"] && r["站點"].includes(' ')) {
-      const parts = r["站點"].split(' ');
-      r["站點"] = parts[0] + '\n' + parts.slice(1).join(' ');
-    }
-  });
-  return data;
+  document.getElementById('loading').style.display = 'block';
+  const res = await fetch(SHEET_URL);
+  const data = await res.json();
+  document.getElementById('loading').style.display = 'none';
+  return data.map(row => ({
+    ...row,
+    "日期": String(row["日期"]), // 保持純文字
+    "站點": row["站點"].replace(" ", "\n") // 中英文換行
+  }));
 }
 
-function showStep(num) {
-  document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
-  document.getElementById(`step${num}`).classList.remove('hidden');
+function showStep(step) {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  document.getElementById('step'+step).classList.add('active');
 }
 
-function loadDates() {
-  const dates = [...new Set(allData.filter(r => r["去程 / 回程"].trim() === selectedDirection).map(r => r["日期"]))];
-  document.getElementById('step2-title').textContent = `${selectedDirection} ${selectedDirection === '回程' ? 'Return (To Hotel)' : 'Departure'}`;
-  const container = document.getElementById('dateCards');
-  container.innerHTML = '';
+function selectDirection(direction) {
+  selectedDirection = direction;
+  document.getElementById('directionTitle').innerText = direction + (direction==="去程" ? " Outbound" : " Return (To Hotel)");
+  document.getElementById('directionSubtitle').innerText = "請選擇日期 / Please select a date";
+  const dates = [...new Set(allData.filter(d=>d["去程 / 回程"]===direction).map(d=>d["日期"]))];
+  const dateCards = document.getElementById('dateCards');
+  dateCards.innerHTML = '';
   dates.forEach(date => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.textContent = date;
-    card.onclick = () => {
-      selectedDate = date;
-      loadStations();
-      showStep(3);
-    };
-    container.appendChild(card);
+    card.innerHTML = `<h3>${date}</h3>`;
+    card.onclick = () => selectDate(date);
+    dateCards.appendChild(card);
   });
+  showStep(2);
 }
 
-function loadStations() {
-  const stations = [...new Set(allData.filter(r => r["去程 / 回程"].trim() === selectedDirection && r["日期"] === selectedDate).map(r => r["站點"]))];
-  document.getElementById('step3-title').textContent = `${selectedDirection} ${selectedDate}`;
-  const container = document.getElementById('stationCards');
-  container.innerHTML = '';
-  stations.forEach(station => {
+function selectDate(date) {
+  selectedDate = date;
+  document.getElementById('dateTitle').innerText = selectedDirection + " " + date;
+  document.getElementById('dateSubtitle').innerText = "上車點 Boarding: (請選擇 / Please select)";
+  const stations = [...new Set(allData.filter(d=>d["去程 / 回程"]===selectedDirection && d["日期"]===date).map(d=>d["站點"]))];
+  const timeCards = document.getElementById('timeCards');
+  timeCards.innerHTML = '';
+  stations.forEach(st => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `<div class="station-name">${station}</div>`;
-    card.onclick = () => {
-      selectedStation = station;
-      loadTimes();
-      showStep(4);
-    };
-    container.appendChild(card);
+    card.innerHTML = `<h3>${st}</h3>`;
+    card.onclick = () => selectStation(st);
+    timeCards.appendChild(card);
   });
+  showStep(3);
 }
 
-function loadTimes() {
-  const times = allData.filter(r => r["去程 / 回程"].trim() === selectedDirection && r["日期"] === selectedDate && r["站點"] === selectedStation);
-  document.getElementById('step4-title').textContent = `${selectedDirection} ${selectedDate}\n${selectedStation}`;
-  const container = document.getElementById('timeCards');
-  container.innerHTML = '';
-  times.forEach(time => {
+function selectStation(station) {
+  document.getElementById('stationTitle').innerText = selectedDirection + " " + selectedDate;
+  document.getElementById('stationSubtitle').innerText = station;
+  const results = allData.filter(d=>d["去程 / 回程"]===selectedDirection && d["日期"]===selectedDate && d["站點"]===station);
+  const resultCards = document.getElementById('resultCards');
+  resultCards.innerHTML = '';
+  results.forEach(r => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.textContent = `${time["班次"]} (${time["可預約人數"]})`;
-    container.appendChild(card);
+    card.innerHTML = `<h3>${r["班次"]}</h3><p>${r["可預約人數"]}</p>`;
+    resultCards.appendChild(card);
   });
+  showStep(4);
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    allData = await fetchData();
-  } catch (err) {
-    alert("資料載入失敗 / Failed to load data: " + err.message);
-    return;
-  }
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.querySelectorAll('#directionCards .card').forEach(c => {
-    c.onclick = () => {
-      selectedDirection = c.dataset.direction;
-      loadDates();
-      showStep(2);
-    };
-  });
-});
+function goBack(step) {
+  showStep(step);
+}
+
+(async () => {
+  allData = await fetchData();
+})();
 </script>
-
 </body>
 </html>
