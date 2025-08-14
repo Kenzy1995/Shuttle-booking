@@ -9,11 +9,12 @@ body { font-family: Arial; background-color: #fff8f0; padding: 20px; }
 h2 { text-align: center; color: #ff7f2a; }
 .step { display: none; text-align: center; margin-top: 20px; }
 .active { display: block; }
-.button-group, .card-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
-.card { background-color: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; width: 200px; cursor: pointer; transition: 0.2s; }
+.card-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
+.card { background-color: white; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; width: 250px; cursor: pointer; transition: 0.2s; }
 .card:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-.btn { background-color:#ff7f2a; color:white; border:none; border-radius:15px; padding:10px 20px; cursor:pointer; }
+.btn { background-color:#ff7f2a; color:white; border:none; border-radius:15px; padding:10px 20px; cursor:pointer; margin:5px; }
 .back-btn { background-color:#ccc; color:#333; }
+.button-area { text-align: center; margin-top:20px; }
 </style>
 </head>
 <body>
@@ -27,59 +28,67 @@ h2 { text-align: center; color: #ff7f2a; }
 <div id="step2" class="step">
   <h3 id="directionTitle"></h3>
   <div class="card-group" id="dateCards"></div>
-  <button class="btn back-btn" onclick="goBack(1)">← 返回方向</button>
+  <div class="button-area">
+    <button class="btn back-btn" onclick="goBack(1)">← 返回方向</button>
+  </div>
 </div>
 
 <div id="step3" class="step">
   <h3 id="dateTitle"></h3>
   <div class="card-group" id="stationCards"></div>
-  <button class="btn back-btn" onclick="goBack(2)">← 返回日期</button>
+  <div class="button-area">
+    <button class="btn back-btn" onclick="goBack(2)">← 返回日期</button>
+  </div>
 </div>
 
 <div id="step4" class="step">
   <h3 id="stationTitle"></h3>
   <div class="card-group" id="scheduleCards"></div>
-  <button class="btn back-btn" onclick="goBack(3)">← 返回站點</button>
+  <div class="button-area">
+    <button class="btn back-btn" onclick="goBack(3)">← 返回站點</button>
+    <button class="btn" onclick="restart()">重新查詢</button>
+    <button class="btn" onclick="confirmBooking()">立即預約</button>
+  </div>
 </div>
 
 <script>
-const jsonUrl = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec"; // ← 換成你部署好的 Apps Script URL
+const jsonUrl = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec"; // 換成你的 Apps Script URL
 let allData = [];
 let selectedDirection='', selectedDate='', selectedStation='';
 
 fetch(jsonUrl)
   .then(res => res.json())
   .then(data => {
-    allData = data.filter(r => r["去程 / 回程"]); // 只留有值的列
+    allData = data.filter(r => r["去程 / 回程"]); // 過濾空值
     initStep1();
   });
 
-function showStep(n) {
-  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+function showStep(n){
+  document.querySelectorAll('.step').forEach(el=>el.classList.remove('active'));
   document.getElementById('step'+n).classList.add('active');
 }
 
-function initStep1() {
+function initStep1(){
   const directions = [...new Set(allData.map(r=>r["去程 / 回程"]))];
   const container = document.getElementById("directionCards");
-  container.innerHTML = "";
-  directions.forEach(d => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.textContent = d;
-    card.onclick = () => selectDirection(d);
+  container.innerHTML="";
+  directions.forEach(d=>{
+    const card=document.createElement("div");
+    card.className="card";
+    card.textContent=d;
+    card.onclick=()=>selectDirection(d);
     container.appendChild(card);
   });
 }
 
-function selectDirection(d) {
-  selectedDirection = d;
-  document.getElementById("directionTitle").innerText = `選擇日期 (${d})`;
+function selectDirection(d){
+  selectedDirection=d;
+  document.getElementById("directionTitle").innerText=`選擇日期 (${d})`;
   const dates = [...new Set(allData.filter(r=>r["去程 / 回程"]===d).map(r=>r["日期"]))];
-  const container = document.getElementById("dateCards");
-  container.innerHTML = "";
-  dates.forEach(date => {
-    const card = document.createElement("div");
+  const container=document.getElementById("dateCards");
+  container.innerHTML="";
+  dates.forEach(date=>{
+    const card=document.createElement("div");
     card.className="card";
     card.textContent=date;
     card.onclick=()=>selectDate(date);
@@ -88,11 +97,11 @@ function selectDirection(d) {
   showStep(2);
 }
 
-function selectDate(date) {
-  selectedDate = date;
+function selectDate(date){
+  selectedDate=date;
   document.getElementById("dateTitle").innerText=`選擇站點 (${selectedDirection} - ${date})`;
   const stations = [...new Set(allData.filter(r=>r["去程 / 回程"]===selectedDirection && r["日期"]===date).map(r=>r["站點"]))];
-  const container = document.getElementById("stationCards");
+  const container=document.getElementById("stationCards");
   container.innerHTML="";
   stations.forEach(station=>{
     const card=document.createElement("div");
@@ -107,20 +116,21 @@ function selectDate(date) {
 function selectStation(station){
   selectedStation=station;
   document.getElementById("stationTitle").innerText=`班次 (${selectedDirection} - ${selectedDate} - ${station})`;
-  const trips = allData.filter(r=>r["去程 / 回程"]===selectedDirection && r["日期"]===selectedDate && r["站點"]===station);
+  const trips=allData.filter(r=>r["去程 / 回程"]===selectedDirection && r["日期"]===selectedDate && r["站點"]===station);
   const container=document.getElementById("scheduleCards");
   container.innerHTML="";
   trips.forEach(trip=>{
     const card=document.createElement("div");
     card.className="card";
-    card.innerHTML=`<h3>${trip["班次"]}</h3><p>${trip["可預約人數"]}</p><button class="btn" onclick="alert('預約: ${trip["班次"]}')">立即預約</button>`;
+    card.innerHTML=`<h3>${trip["班次"]}</h3><p>${trip["可預約人數"]}</p>`;
     container.appendChild(card);
   });
   showStep(4);
 }
 
 function goBack(step){ showStep(step); }
-
+function restart(){ showStep(1); selectedDirection=''; selectedDate=''; selectedStation=''; }
+function confirmBooking(){ alert(`預約 ${selectedDirection} ${selectedDate} ${selectedStation}`); }
 </script>
 
 </body>
