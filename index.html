@@ -226,15 +226,17 @@
 /* ====== 配置 ====== */
 const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
 const BOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScVlCdt19OAsW-nEdd-eKhm5zs6cZGtTyVEJ-_ZcoV52lKoKg/viewform";
+const DATA_CACHE_TIME = 5 * 60 * 1000; // 5分鐘快取時間
 
 /* ====== 狀態 ====== */
 let allRows = [];
-let selectedDirection = "";     // 去程 / 回程
-let selectedDateRaw = "";       // 從資料原值比對
-let selectedDateLabel = "";     // 給 UI 顯示（已格式化）
-let selectedStationRaw = "";    // 原始站名（中英一起）
-let selectedStationZh = "";     // 站名中文
-let selectedStationEn = "";     // 站名英文
+let lastFetchTime = 0;
+let selectedDirection = "";
+let selectedDateRaw = "";
+let selectedDateLabel = "";
+let selectedStationRaw = "";
+let selectedStationZh = "";
+let selectedStationEn = "";
 
 /* ====== 工具：字串格式化 ====== */
 // 將可能是 "2025-08-16T16:00:00.000Z" 或 "2025/8/16" 的日期，轉成 "YYYY-MM-DD" 顯示
@@ -301,24 +303,56 @@ function showStep(n){
 }
 
 /* ====== 資料載入 ====== */
-async function loadData(){
+async function loadData(forceRefresh = false) {
   const loading = document.getElementById("loading");
+  const now = Date.now();
+  
+  // 如果不是強制刷新且資料在快取時間內，直接使用現有資料
+  if (!forceRefresh && allRows.length > 0 && (now - lastFetchTime) < DATA_CACHE_TIME) {
+    if (!document.getElementById("step1").classList.contains("active")) {
+      document.getElementById("step1").classList.add("active");
+    }
+    loading.style.display = "none";
+    return;
+  }
+
   loading.style.display = "flex";
-  try{
-    const res = await fetch(API_URL);
-    const raw = await res.json();
-    // 不改動原值，但供 UI 顯示時做格式化
-    allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+  
+  try {
+    // 在URL後加入時間戳記避免瀏覽器快取
+    const timestamp = forceRefresh ? Date.now() : lastFetchTime;
+    const res = await fetch(`${API_URL}?t=${timestamp}`);
     
-    // 資料載入完成後才顯示第一步
-    document.getElementById("step1").classList.add("active");
-  }catch(e){
-    alert("資料讀取中 / Loading data: " + e.message);
-  }finally{
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const raw = await res.json();
+    allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+    lastFetchTime = now;
+    
+    // 如果是強制刷新，回到第一步
+    if (forceRefresh) {
+      restart();
+    } else if (!document.getElementById("step1").classList.contains("active")) {
+      document.getElementById("step1").classList.add("active");
+    }
+  } catch(e) {
+    console.error("資料載入失敗:", e);
+    loading.innerHTML = `
+      <div style="text-align:center;">
+        <div class="loader"></div>
+        <div>資料載入中，請稍候...</div>
+        <div style="margin-top:20px; color:var(--muted); font-size:14px;">
+          若長時間未響應，請<a href="javascript:location.reload()">重新整理頁面</a>
+        </div>
+      </div>
+    `;
+    return;
+  } finally {
     loading.style.display = "none";
   }
 }
-
 /* ====== 流程 ====== */
 function selectDirection(dir){
   selectedDirection = dir;
@@ -432,28 +466,44 @@ function selectStation(stationRaw){
 }
 
 /* ====== 控制鈕 ====== */
-function goBack(step){ showStep(step); }
-function restart(){
-  selectedDirection = ""; selectedDateRaw=""; selectedDateLabel="";
-  selectedStationRaw=""; selectedStationZh=""; selectedStationEn="";
-  showStep(1);
+function goBack(step) { 
+  showStep(step); 
 }
-function bookNow(){ window.open(BOOK_URL, "_blank"); }
+
+function restart(){
+  // 清空選擇狀態
+  selectedDirection = ""; 
+  selectedDateRaw = ""; 
+  selectedDateLabel = "";
+  selectedStationRaw = ""; 
+  selectedStationZh = ""; 
+  selectedStationEn = "";
+  
+  // 強制重新載入資料
+  loadData(true);
+}
+
+function bookNow() { 
+  window.open(BOOK_URL, "_blank"); 
+}
 
 /* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async () => {
+  // 加入防止快取的meta標籤
+  const meta = document.createElement('meta');
+  meta.httpEquiv = "Cache-Control";
+  meta.content = "no-cache, no-store, must-revalidate";
+  document.head.appendChild(meta);
+  
+  const meta2 = document.createElement('meta');
+  meta2.httpEquiv = "Pragma";
+  meta2.content = "no-cache";
+  document.head.appendChild(meta2);
+  
+  const meta3 = document.createElement('meta');
+  meta3.httpEquiv = "Expires";
+  meta3.content = "0";
+  document.head.appendChild(meta3);
+
   await loadData();
 });
-</script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
