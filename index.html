@@ -301,21 +301,26 @@ function showStep(n){
 }
 
 /* ====== 資料載入 ====== */
-async function loadData(){
+async function loadData(forceReload = false, silent = false){
   const loading = document.getElementById("loading");
-  loading.style.display = "flex";
+  if (!silent) loading.style.display = "flex";
+
   try{
-    const res = await fetch(API_URL);
+    let url = API_URL;
+    if (forceReload) {
+      url += (url.includes("?") ? "&" : "?") + "t=" + Date.now(); // 防快取
+    }
+    const res = await fetch(url, { cache: "no-store" });
     const raw = await res.json();
-    // 不改動原值，但供 UI 顯示時做格式化
     allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
-    
-    // 資料載入完成後才顯示第一步
-    document.getElementById("step1").classList.add("active");
+
+    if (!silent) {
+      document.getElementById("step1").classList.add("active");
+    }
   }catch(e){
-    alert("資料讀取中 / Loading data: " + e.message);
+    alert("資料讀取失敗 / Loading data failed: " + e.message);
   }finally{
-    loading.style.display = "none";
+    if (!silent) loading.style.display = "none";
   }
 }
 
@@ -432,18 +437,34 @@ function selectStation(stationRaw){
 }
 
 /* ====== 控制鈕 ====== */
-function goBack(step){ showStep(step); }
-function restart(){
-  selectedDirection = ""; selectedDateRaw=""; selectedDateLabel="";
-  selectedStationRaw=""; selectedStationZh=""; selectedStationEn="";
-  showStep(1);
+function goBack(step){
+  if (step === 1) {
+    loadData(true); // 回到第一步時強制更新資料
+  } else {
+    showStep(step);
+  }
 }
-function bookNow(){ window.open(BOOK_URL, "_blank"); }
+
+function restart(){
+  selectedDirection = ""; 
+  selectedDateRaw = "";
+  selectedDateLabel = "";
+  selectedStationRaw = "";
+  selectedStationZh = "";
+  selectedStationEn = "";
+  loadData(true); // 強制重新讀取最新資料並回到第一步
+}
+
+function bookNow(){
+  window.open(BOOK_URL, "_blank");
+}
 
 /* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadData();
+  await loadData(true); // 首次讀取最新資料
+
+  // 每 3 分鐘靜默刷新一次資料（不會跳回 Step 1）
+  setInterval(() => {
+    loadData(true, true); // 靜默模式
+  }, 3 * 60 * 1000);
 });
-</script>
-</body>
-</html>
