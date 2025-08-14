@@ -313,7 +313,7 @@ async function loadData(){
     // 資料載入完成後才顯示第一步
     document.getElementById("step1").classList.add("active");
   }catch(e){
-    alert("資料載入失敗 / Failed to load data: " + e.message);
+    alert("資料讀取中 / Loading data: " + e.message);
   }finally{
     loading.style.display = "none";
   }
@@ -447,6 +447,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
+
 
 
 
