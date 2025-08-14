@@ -31,7 +31,7 @@
     display:flex; justify-content:center; flex-wrap:wrap; gap:20px;
   }
 
-  /* primary buttons (step1) */
+  /* primary buttons (step1) 橘底白字 */
   .btn-primary{
     background:var(--orange); color:#fff; border:none; border-radius:var(--radius);
     padding:16px 28px; font-size:18px; cursor:pointer;
@@ -45,12 +45,11 @@
   }
   .btn-primary:hover{ transform:scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,.2); }
 
-  /* normal buttons - 加大寬度 */
+  /* normal buttons */
   .btn{
     background:#e9e9e9; color:#333; border:none; border-radius:var(--radius);
     padding:12px 20px; font-size:16px; cursor:pointer;
     transition:background .2s;
-    width: 220px; /* 加大寬度 */
     text-align: center;
     box-sizing: border-box;
     margin: 5px 0;
@@ -75,9 +74,9 @@
   .card h3{ margin:0 0 8px; color:var(--orange); font-size:20px; }
   .card p{ margin:6px 0 0; color:#666; font-weight:600; }
 
-  /* titles - 電腦版置中 */
+  /* titles */
   .title-container {
-    text-align: center;
+    text-align: center; /* 預設桌機置中 */
     margin-bottom: 18px;
   }
   .title {
@@ -100,22 +99,11 @@
   .subtitle strong { color:#444; }
   .subtitle .muted { color:var(--muted); }
   
-  /* 手機版樣式 */
+  /* 響應式設計：手機標題置左 */
   @media (max-width: 768px) {
-    /* 所有標題置左 */
     .title-container {
       text-align: left;
       padding: 0 10px;
-    }
-    /* 最終步驟英文標題置左 */
-    #finalTitleEn.title-en {
-      text-align: left;
-      padding-left: 10px;
-    }
-    /* 按鈕垂直排列 */
-    .final-buttons {
-      flex-direction: column;
-      align-items: center;
     }
   }
 
@@ -132,7 +120,10 @@
   }
   @keyframes spin{ to{ transform:rotate(360deg);} }
 
-  /* 最終步驟按鈕組 */
+  /* header block spacing for final step */
+  .header-block{ margin-bottom:8px; }
+  
+  /* 最終步驟的按鈕組 */
   .final-buttons {
     display: flex;
     gap: 10px;
@@ -140,8 +131,29 @@
     flex-wrap: wrap;
     margin-top: 18px;
   }
+
+  /* 最終步驟的按鈕寬度優化 */
+  .final-buttons .btn {
+    min-width: 200px; /* 最小寬度一致 */
+    width: auto; /* 自動撐寬 */
+    padding: 12px 24px;
+    white-space: nowrap; /* 強制不換行 */
+  }
   
-  /* 站點資訊 */
+  /* 最後畫面英文標題 Return ... */
+  #finalTitleEn {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center; /* 預設桌機置中 */
+  }
+  @media (max-width: 768px) {
+    #finalTitleEn {
+      text-align: left; /* 手機置左 */
+      padding-left: 10px;
+    }
+  }
+
+  /* 站點資訊顯示 */
   .station-info {
     margin: 10px 0;
     line-height: 1.5;
@@ -150,32 +162,32 @@
 </head>
 <body>
 
-<!-- 各步驟HTML保持不變 -->
-<!-- ... -->
+<!-- 假設這是最後一頁的標題 -->
+<div id="finalTitleEn" class="title-en">Return 12:30</div>
+
+<!-- 最終步驟按鈕示例 -->
+<div class="final-buttons">
+  <button class="btn btn-orange" onclick="bookNow()">立即預約</button>
+  <button class="btn" onclick="goBack(2)">返回上一步</button>
+  <button class="btn" onclick="restart()">重新查詢</button>
+</div>
+
+<!-- Loading 畫面 -->
+<div id="loading">
+  <div class="loader"></div>
+  <div>資料載入中...</div>
+</div>
 
 <script>
 /* ====== 配置 ====== */
-const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec?cache=" + Date.now();
 const BOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScVlCdt19OAsW-nEdd-eKhm5zs6cZGtTyVEJ-_ZcoV52lKoKg/viewform";
 
 /* ====== 狀態 ====== */
 let allRows = [];
-let selectedDirection = "";
-let selectedDateRaw = "";
-let selectedDateLabel = "";
-let selectedStationRaw = "";
-let selectedStationZh = "";
-let selectedStationEn = "";
 
-/* ====== 工具：日期格式化 ====== */
-// 直接顯示原始日期文字，不做轉換
-function fmtDateLabel(v){
-  if(!v) return "";
-  return String(v).trim(); // 直接返回原始文字
-}
-
-/* ====== 其他工具函數保持不變 ====== */
-// ... (stationWithBreak, splitStationZhEn等)
+/* ====== 工具函數 ====== */
+// 假設 fmtDateLabel 已經定義在其他地方
 
 /* ====== 資料載入 ====== */
 async function loadData(){
@@ -184,8 +196,11 @@ async function loadData(){
   try{
     const res = await fetch(API_URL);
     const raw = await res.json();
-    allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
-    document.getElementById("step1").classList.add("active");
+    const today = new Date().toISOString().slice(0,10);
+    allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"] && 
+                            fmtDateLabel(r["日期"]) >= today);
+    
+    document.getElementById("step1")?.classList.add("active");
   }catch(e){
     alert("資料載取失敗 / Failed to load data: " + e.message);
   }finally{
@@ -194,40 +209,10 @@ async function loadData(){
 }
 
 /* ====== 流程控制 ====== */
-function selectDirection(dir){
-  selectedDirection = dir;
-  const dirEn = dir === "回程" ? "Return (To Hotel)" : "Departure (From Hotel)";
-  document.getElementById("step2Title").textContent = `${dir} ${dirEn}`;
-
-  const dateSet = new Set(
-    allRows.filter(r => String(r["去程 / 回程"]).trim() === dir).map(r => fmtDateLabel(r["日期"]))
-  );
-
-  const cards = document.getElementById("dateCards");
-  cards.innerHTML = "";
-  [...dateSet].forEach(dateRaw => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `<h3>${dateRaw}</h3>`; // 直接顯示原始日期
-    card.onclick = () => {
-      selectedDateRaw = dateRaw;
-      selectedDateLabel = dateRaw;
-      selectDate(dateRaw);
-    };
-    cards.appendChild(card);
-  });
-
-  showStep(2);
-}
-
-/* ====== 其他流程函數保持不變 ====== */
-// ... (selectDate, selectStation等)
-
-/* ====== 控制鈕 ====== */
 function goBack(step){ showStep(step); }
 
 function restart(){
-  window.location.reload(); // 完全重新載入頁面
+  location.reload(); // 重新整理並重新讀取資料
 }
 
 function bookNow(){ window.open(BOOK_URL, "_blank"); }
