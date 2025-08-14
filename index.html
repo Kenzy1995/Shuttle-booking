@@ -255,7 +255,6 @@ body{
     <div class="final-buttons">
         <button class="btn" onclick="goBack(3)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
-        <button class="btn btn-orange" onclick="bookNow()">📝 立即預約 / Book Now</button>
     </div>
 </div>
 
@@ -415,20 +414,24 @@ function selectStation(stationRaw){
     document.getElementById("finalTitleEn").textContent=`${enDir} ${selectedDateLabel}`;
     document.getElementById("finalMetaEn").innerHTML=`${enBoard}<br>${enDrop}`;
 
-    const list = allRows.filter(r=>
-        String(r["去程 / 回程"]).trim()===selectedDirection &&
-        String(r["日期"]).trim()===selectedDateRaw &&
-        String(r["站點"]).trim()===selectedStationRaw
+   const list = allRows.filter(r => 
+        String(r["去程 / 回程"]).trim() === selectedDirection &&
+        String(r["日期"]).trim() === selectedDateRaw &&
+        String(r["站點"]).trim() === selectedStationRaw
     );
 
     const wrap = document.getElementById("scheduleCards");
-    wrap.innerHTML="";
-    list.forEach(r=>{
+    wrap.innerHTML = "";
+    list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
-        const availText = String(r["可預約人數"]||r["可預約 / Available"]||"").trim();
+        const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
         const card = document.createElement("div");
-        card.className="card";
-        card.innerHTML=`<h3>${timeLabel}</h3><p>${availText}</p>`;
+        card.className = "card";
+        card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
+        
+        // 點擊卡片直接跳轉
+        card.onclick = () => window.open(BOOK_URL, "_blank");
+        
         wrap.appendChild(card);
     });
 
@@ -456,7 +459,7 @@ function restart(){
     // 重新抓取資料
     loadData();
 }
-function bookNow(){ window.open(BOOK_URL,"_blank"); }
+
 
 /* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async ()=>{
@@ -480,6 +483,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
