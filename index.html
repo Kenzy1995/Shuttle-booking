@@ -2,14 +2,18 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>交通預約系統 / Shuttle Bus Reservation</title>
+<title>接駁車預約系統 / Shuttle Bus Reservation</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; background: #fff; }
   .hidden { display: none; }
-  .card { border: 1px solid #ccc; border-radius: 10px; padding: 15px; margin: 10px; display: inline-block; cursor: pointer; width: 220px; }
-  .card:hover { background: #f0f0f0; }
-  .step { margin-top: 20px; }
-  .station-name { white-space: pre-line; font-weight: bold; } /* 換行顯示中英文 */
+  .card { border: 1px solid #ccc; border-radius: 10px; padding: 15px; margin: 10px; display: inline-block; cursor: pointer; width: 220px; color: #ff6600; background: #fff; font-weight: bold; }
+  .card:hover { background: #ffe8d6; }
+  .step-title { font-size: 24px; font-weight: bold; margin-top: 20px; color: #ff6600; }
+  .step-subtitle { font-size: 16px; margin-bottom: 15px; color: #555; }
+  .station-name { white-space: pre-line; font-weight: bold; color: #ff6600; }
+  /* 去程/回程卡片橘底白字 */
+  #directionCards .card { background: #ff6600; color: white; }
+  #directionCards .card:hover { background: #e65c00; }
   /* Loading 畫面 */
   #loadingScreen {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -18,7 +22,7 @@
     font-size: 18px;
   }
   .loader {
-    border: 6px solid #f3f3f3; border-top: 6px solid #3498db;
+    border: 6px solid #f3f3f3; border-top: 6px solid #ff6600;
     border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
     margin-bottom: 15px;
   }
@@ -33,28 +37,35 @@
   <div>資料讀取中...<br>Loading data...</div>
 </div>
 
-<h1>交通預約系統 / Shuttle Bus Reservation</h1>
-
+<!-- Step 1 -->
 <div id="step1" class="step">
-  <h2>選擇方向 / Select Direction</h2>
+  <div class="step-title">選擇方向 / Select Direction</div>
   <div id="directionCards">
     <div class="card" data-direction="去程">去程<br>Departure</div>
-    <div class="card" data-direction="回程">回程<br>Return</div>
+    <div class="card" data-direction="回程">回程<br>Return (To Hotel)</div>
   </div>
 </div>
 
+<!-- Step 2 -->
 <div id="step2" class="step hidden">
-  <h2>選擇日期 / Select Date</h2>
+  <div class="step-title" id="step2-title"></div>
+  <div class="step-subtitle">請選擇日期 / Please select a date</div>
   <div id="dateCards"></div>
 </div>
 
+<!-- Step 3 -->
 <div id="step3" class="step hidden">
-  <h2>選擇站別 / Select Station</h2>
+  <div class="step-title" id="step3-title"></div>
+  <div class="step-subtitle">
+    下車點 Drop-off: 飯店 / Hotel<br>
+    上車點 Boarding: (請選擇 / Please select)
+  </div>
   <div id="stationCards"></div>
 </div>
 
+<!-- Step 4 -->
 <div id="step4" class="step hidden">
-  <h2>選擇班次 / Select Time</h2>
+  <div class="step-title" id="step4-title"></div>
   <div id="timeCards"></div>
 </div>
 
@@ -66,80 +77,64 @@ let selectedStation = '';
 
 async function fetchData() {
   const sheetUrl = 'https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec';
-  
   const response = await fetch(sheetUrl);
-  if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`);
-  }
-  
+  if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
   const data = await response.json();
 
-  // 自動處理站名換行
+  // 中英文換行
   data.forEach(r => {
     if (r["站點"] && r["站點"].includes(' ')) {
       const parts = r["站點"].split(' ');
       r["站點"] = parts[0] + '\n' + parts.slice(1).join(' ');
     }
   });
-
   return data;
 }
 
-function showStep(stepNum) {
-  document.querySelectorAll('.step').forEach(step => step.classList.add('hidden'));
-  document.getElementById(`step${stepNum}`).classList.remove('hidden');
+function showStep(num) {
+  document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+  document.getElementById(`step${num}`).classList.remove('hidden');
 }
 
 function loadDates() {
-  const dates = [...new Set(allData
-    .filter(r => r["去程 / 回程"].trim() === selectedDirection)
-    .map(r => r["日期"])
-  )];
-
+  const dates = [...new Set(allData.filter(r => r["去程 / 回程"].trim() === selectedDirection).map(r => r["日期"]))];
+  document.getElementById('step2-title').textContent = `${selectedDirection} ${selectedDirection === '回程' ? 'Return (To Hotel)' : 'Departure'}`;
   const container = document.getElementById('dateCards');
   container.innerHTML = '';
   dates.forEach(date => {
     const card = document.createElement('div');
     card.className = 'card';
     card.textContent = date;
-    card.addEventListener('click', () => {
+    card.onclick = () => {
       selectedDate = date;
       loadStations();
       showStep(3);
-    });
+    };
     container.appendChild(card);
   });
 }
 
 function loadStations() {
-  const stations = [...new Set(allData
-    .filter(r => r["去程 / 回程"].trim() === selectedDirection && r["日期"] === selectedDate)
-    .map(r => r["站點"])
-  )];
-
+  const stations = [...new Set(allData.filter(r => r["去程 / 回程"].trim() === selectedDirection && r["日期"] === selectedDate).map(r => r["站點"]))];
+  document.getElementById('step3-title').textContent = `${selectedDirection} ${selectedDate}`;
   const container = document.getElementById('stationCards');
   container.innerHTML = '';
   stations.forEach(station => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `<div class="station-name">${station}</div>`;
-    card.addEventListener('click', () => {
+    card.onclick = () => {
       selectedStation = station;
       loadTimes();
       showStep(4);
-    });
+    };
     container.appendChild(card);
   });
 }
 
 function loadTimes() {
-  const times = allData
-    .filter(r =>
-      r["去程 / 回程"].trim() === selectedDirection &&
-      r["日期"] === selectedDate &&
-      r["站點"] === selectedStation
-    );
-
+  const times = allData.filter(r => r["去程 / 回程"].trim() === selectedDirection && r["日期"] === selectedDate && r["站點"] === selectedStation);
+  document.getElementById('step4-title').textContent = `${selectedDirection} ${selectedDate}\n${selectedStation}`;
   const container = document.getElementById('timeCards');
   container.innerHTML = '';
   times.forEach(time => {
@@ -150,7 +145,6 @@ function loadTimes() {
   });
 }
 
-// 初始化流程
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     allData = await fetchData();
@@ -158,16 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert("資料載入失敗 / Failed to load data: " + err.message);
     return;
   }
-
-  // 關閉 Loading 畫面
   document.getElementById('loadingScreen').style.display = 'none';
-
-  document.querySelectorAll('#directionCards .card').forEach(card => {
-    card.addEventListener('click', () => {
-      selectedDirection = card.dataset.direction;
+  document.querySelectorAll('#directionCards .card').forEach(c => {
+    c.onclick = () => {
+      selectedDirection = c.dataset.direction;
       loadDates();
       showStep(2);
-    });
+    };
   });
 });
 </script>
