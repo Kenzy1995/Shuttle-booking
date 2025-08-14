@@ -355,9 +355,9 @@ function selectDate(dateRaw){
   const isReturn = selectedDirection === "回程";
   document.getElementById("step3Sub").innerHTML = isReturn
     ? `<div class="station-info">下車站點 Drop-off: 飯店 / Hotel</div>
-       <div class="station-info">上車站點 Boarding: <span style="color: var(--muted);">*請選擇 / Please select</span></div>`
+       <div class="station-info">上車站點 Boarding: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`
     : `<div class="station-info">上車站點 Boarding: 飯店 / Hotel</div>
-       <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇 / Please select</span></div>`;
+       <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`;
 
   // 站點列表
   const stations = new Set(
@@ -447,6 +447,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
+
 
 
 
