@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>接駁車預約系統</title>
+<title>Shuttle Bus Reservation System / 接駁車預約系統</title>
 <style>
 body { font-family: Arial; background-color: #fff8f0; padding: 20px; }
 h2 { text-align: center; color: #ff7f2a; }
@@ -15,52 +15,91 @@ h2 { text-align: center; color: #ff7f2a; }
 .btn { background-color:#ff7f2a; color:white; border:none; border-radius:15px; padding:10px 20px; cursor:pointer; margin:5px; }
 .back-btn { background-color:#ccc; color:#333; }
 .button-area { text-align: center; margin-top:20px; }
+.station-name { white-space: pre-line; }
+.trip-info { margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 8px; }
 </style>
 </head>
 <body>
 
-<h2>接駁車預約系統</h2>
+<h2>Shuttle Bus Reservation System<br>接駁車預約系統</h2>
 
 <div id="step1" class="step active">
-  <div class="card-group" id="directionCards"></div>
+  <div class="card-group" id="directionCards">
+    <div class="card" onclick="selectDirection('去程 / Departure')">
+      <h3>去程 / Departure</h3>
+      <p>從飯店出發<br>From Hotel</p>
+    </div>
+    <div class="card" onclick="selectDirection('回程 / Return')">
+      <h3>回程 / Return</h3>
+      <p>返回飯店<br>Back to Hotel</p>
+    </div>
+  </div>
 </div>
 
 <div id="step2" class="step">
   <h3 id="directionTitle"></h3>
   <div class="card-group" id="dateCards"></div>
   <div class="button-area">
-    <button class="btn back-btn" onclick="goBack(1)">← 返回方向</button>
+    <button class="btn back-btn" onclick="goBack(1)">← 返回方向 / Back</button>
   </div>
 </div>
 
 <div id="step3" class="step">
   <h3 id="dateTitle"></h3>
+  <div class="trip-info" id="tripInfo"></div>
   <div class="card-group" id="stationCards"></div>
   <div class="button-area">
-    <button class="btn back-btn" onclick="goBack(2)">← 返回日期</button>
+    <button class="btn back-btn" onclick="goBack(2)">← 返回日期 / Back</button>
   </div>
 </div>
 
 <div id="step4" class="step">
   <h3 id="stationTitle"></h3>
+  <div class="trip-info" id="finalTripInfo"></div>
   <div class="card-group" id="scheduleCards"></div>
   <div class="button-area">
-    <button class="btn back-btn" onclick="goBack(3)">← 返回站點</button>
-    <button class="btn" onclick="restart()">重新查詢</button>
-    <button class="btn" onclick="confirmBooking()">立即預約</button>
+    <button class="btn back-btn" onclick="goBack(3)">← 返回站點 / Back</button>
+    <button class="btn" onclick="restart()">重新查詢 / Restart</button>
+    <button class="btn" onclick="confirmBooking()">立即預約 / Book Now</button>
   </div>
 </div>
 
 <script>
 const jsonUrl = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec"; // 換成你的 Apps Script URL
 let allData = [];
-let selectedDirection='', selectedDate='', selectedStation='';
+let selectedDirection = '', selectedDate = '', selectedStation = '';
+let isDeparture = false; // 去程為true，回程為false
+
+// 格式化日期時間顯示
+function formatDateTime(datetimeStr) {
+  if (!datetimeStr) return '';
+  
+  try {
+    // 處理異常日期格式
+    if (datetimeStr.includes('1899-12-30')) {
+      const timePart = datetimeStr.split('T')[1].substring(0, 5);
+      return timePart;
+    }
+    
+    const date = new Date(datetimeStr);
+    return date.toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-');
+  } catch (e) {
+    return datetimeStr; // 如果解析失敗，返回原始字符串
+  }
+}
 
 fetch(jsonUrl)
   .then(res => res.json())
   .then(data => {
     allData = data.filter(r => r["去程 / 回程"]); // 過濾空值
-    initStep1();
+    // 初始化時不需要調用initStep1()，因為我們已經在HTML中硬編碼了方向選擇
   });
 
 function showStep(n){
@@ -68,69 +107,134 @@ function showStep(n){
   document.getElementById('step'+n).classList.add('active');
 }
 
-function initStep1(){
-  const directions = [...new Set(allData.map(r=>r["去程 / 回程"]))];
-  const container = document.getElementById("directionCards");
-  container.innerHTML="";
-  directions.forEach(d=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.textContent=d;
-    card.onclick=()=>selectDirection(d);
-    container.appendChild(card);
-  });
-}
-
 function selectDirection(d){
-  selectedDirection=d;
-  document.getElementById("directionTitle").innerText=`選擇日期 (${d})`;
-  const dates = [...new Set(allData.filter(r=>r["去程 / 回程"]===d).map(r=>r["日期"]))];
-  const container=document.getElementById("dateCards");
-  container.innerHTML="";
-  dates.forEach(date=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.textContent=date;
-    card.onclick=()=>selectDate(date);
+  selectedDirection = d;
+  isDeparture = d.includes('去程');
+  
+  // 設置方向標題
+  const directionTitle = document.getElementById("directionTitle");
+  directionTitle.innerHTML = isDeparture 
+    ? "選擇日期 / Select Date<br>去程 / Departure (From Hotel)" 
+    : "選擇日期 / Select Date<br>回程 / Return (To Hotel)";
+  
+  // 獲取該方向的所有日期
+  const dates = [...new Set(allData.filter(r => r["去程 / 回程"] === d).map(r => r["日期"])];
+  const container = document.getElementById("dateCards");
+  container.innerHTML = "";
+  
+  dates.forEach(date => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.textContent = formatDateTime(date);
+    card.onclick = () => selectDate(date);
     container.appendChild(card);
   });
+  
   showStep(2);
 }
 
 function selectDate(date){
-  selectedDate=date;
-  document.getElementById("dateTitle").innerText=`選擇站點 (${selectedDirection} - ${date})`;
-  const stations = [...new Set(allData.filter(r=>r["去程 / 回程"]===selectedDirection && r["日期"]===date).map(r=>r["站點"]))];
-  const container=document.getElementById("stationCards");
-  container.innerHTML="";
-  stations.forEach(station=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.textContent=station;
-    card.onclick=()=>selectStation(station);
+  selectedDate = date;
+  
+  // 設置日期標題
+  const dateTitle = document.getElementById("dateTitle");
+  dateTitle.innerHTML = `選擇站點 / Select Station<br>${selectedDirection} - ${formatDateTime(date)}`;
+  
+  // 更新行程信息
+  const tripInfo = document.getElementById("tripInfo");
+  if (isDeparture) {
+    tripInfo.innerHTML = `上車點 / Boarding: 飯店 / Hotel<br>下車點 / Drop-off: (請選擇)`;
+  } else {
+    tripInfo.innerHTML = `上車點 / Boarding: (請選擇)<br>下車點 / Drop-off: 飯店 / Hotel`;
+  }
+  
+  // 獲取該方向、日期的所有站點
+  const stations = [...new Set(allData.filter(r => 
+    r["去程 / 回程"] === selectedDirection && 
+    r["日期"] === date
+  ).map(r => r["站點"]))];
+  
+  const container = document.getElementById("stationCards");
+  container.innerHTML = "";
+  
+  stations.forEach(station => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="station-name">${station.replace(' / ', '<br>')}</div>`;
+    card.onclick = () => selectStation(station);
     container.appendChild(card);
   });
+  
   showStep(3);
 }
 
 function selectStation(station){
-  selectedStation=station;
-  document.getElementById("stationTitle").innerText=`班次 (${selectedDirection} - ${selectedDate} - ${station})`;
-  const trips=allData.filter(r=>r["去程 / 回程"]===selectedDirection && r["日期"]===selectedDate && r["站點"]===station);
-  const container=document.getElementById("scheduleCards");
-  container.innerHTML="";
-  trips.forEach(trip=>{
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`<h3>${trip["班次"]}</h3><p>${trip["可預約人數"]}</p>`;
+  selectedStation = station;
+  
+  // 設置站點標題
+  const stationTitle = document.getElementById("stationTitle");
+  stationTitle.innerHTML = `選擇班次 / Select Schedule<br>${selectedDirection} - ${formatDateTime(selectedDate)} - ${selectedStation.replace(' / ', ' ')}`;
+  
+  // 更新最終行程信息
+  const finalTripInfo = document.getElementById("finalTripInfo");
+  if (isDeparture) {
+    finalTripInfo.innerHTML = `
+      <strong>行程信息 / Trip Info:</strong><br>
+      上車點 / Boarding: 飯店 / Hotel<br>
+      下車點 / Drop-off: ${selectedStation.replace(' / ', ' / ')}
+    `;
+  } else {
+    finalTripInfo.innerHTML = `
+      <strong>行程信息 / Trip Info:</strong><br>
+      上車點 / Boarding: ${selectedStation.replace(' / ', ' / ')}<br>
+      下車點 / Drop-off: 飯店 / Hotel
+    `;
+  }
+  
+  // 獲取該方向、日期、站點的所有班次
+  const trips = allData.filter(r => 
+    r["去程 / 回程"] === selectedDirection && 
+    r["日期"] === selectedDate && 
+    r["站點"] === selectedStation
+  );
+  
+  const container = document.getElementById("scheduleCards");
+  container.innerHTML = "";
+  
+  trips.forEach(trip => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${formatDateTime(trip["班次"])}</h3>
+      <p>可預約人數 / Available: ${trip["可預約人數"] || trip["可預約 / Available"]}</p>
+    `;
     container.appendChild(card);
   });
+  
   showStep(4);
 }
 
 function goBack(step){ showStep(step); }
-function restart(){ showStep(1); selectedDirection=''; selectedDate=''; selectedStation=''; }
-function confirmBooking(){ alert(`預約 ${selectedDirection} ${selectedDate} ${selectedStation}`); }
+
+function restart(){ 
+  showStep(1); 
+  selectedDirection = ''; 
+  selectedDate = ''; 
+  selectedStation = ''; 
+}
+
+function confirmBooking(){ 
+  const tripType = isDeparture ? "Departure" : "Return";
+  const fromTo = isDeparture 
+    ? `From Hotel to ${selectedStation}` 
+    : `From ${selectedStation} to Hotel`;
+  
+  alert(`Booking Confirmed / 預約確認\n
+Direction / 方向: ${selectedDirection}\n
+Date / 日期: ${formatDateTime(selectedDate)}\n
+Trip / 行程: ${fromTo}\n
+Please arrive at the boarding point 10 minutes early / 請提前10分鐘到達上車點`);
+}
 </script>
 
 </body>
