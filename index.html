@@ -466,5 +466,23 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </body>
 </html>
 
+/* ====== 靜默刷新 ====== */
+const REFRESH_INTERVAL = 15 * 60 * 1000; // 15分鐘
+
+async function silentRefresh(){
+    try {
+        const res = await fetch(API_URL);
+        const raw = await res.json();
+        // 更新 allRows，但不更改畫面
+        allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+        console.log("資料已更新", new Date().toLocaleTimeString());
+    } catch(e){
+        console.warn("資料更新失敗:", e.message);
+    }
+}
+
+// 啟動靜默刷新
+setInterval(silentRefresh, REFRESH_INTERVAL);
+
 
 
