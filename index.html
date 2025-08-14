@@ -375,9 +375,9 @@ function selectDate(dateRaw){
     document.getElementById("step3Title").textContent = `${selectedDirection} ${selectedDateLabel}`;
     const isReturn = selectedDirection==="回程";
     document.getElementById("step3Sub").innerHTML = isReturn?
-        `<div class="station-info">下車站點 Drop-off: 飯店 / Hotel</div>
+        `<div class="station-info">下車站點 Drop-off: 福泰大飯店 Forte Hotel</div>
          <div class="station-info">上車站點 Boarding: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`:
-        `<div class="station-info">上車站點 Boarding: 飯店 / Hotel</div>
+        `<div class="station-info">上車站點 Boarding: 福泰大飯店 Forte Hotel</div>
          <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`;
 
     const stations = new Set(
@@ -404,13 +404,13 @@ function selectStation(stationRaw){
 
     const zhDir = selectedDirection==="回程"?"回程":"去程";
     const enDir = selectedDirection==="回程"?"Return":"Departure";
-    const zhBoard = selectedDirection==="回程"?`上車站點: ${selectedStationZh||"（未提供）"}`:`上車站點: 飯店`;
-    const zhDrop = selectedDirection==="回程"?`下車站點: 飯店`:`下車站點: ${selectedStationZh||"（未提供）"}`;
+    const zhBoard = selectedDirection==="回程"?`上車站點: ${selectedStationZh||"（未提供）"}`:`上車站點: 福泰大飯店`;
+    const zhDrop = selectedDirection==="回程"?`下車站點: 福泰大飯店`:`下車站點: ${selectedStationZh||"（未提供）"}`;
     document.getElementById("finalTitleZh").textContent=`${zhDir} ${selectedDateLabel}`;
     document.getElementById("finalMetaZh").innerHTML=`${zhBoard}<br>${zhDrop}`;
 
-    const enBoard = selectedDirection==="回程"?`Boarding: ${selectedStationEn||selectedStationZh||"N/A"}`:`Boarding: Hotel`;
-    const enDrop = selectedDirection==="回程"?`Drop-off: Hotel`:`Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
+    const enBoard = selectedDirection==="回程"?`Boarding: ${selectedStationEn||selectedStationZh||"N/A"}`:`Boarding: Forte Hotel`;
+    const enDrop = selectedDirection==="回程"?`Drop-off: Forte Hotel`:`Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
     document.getElementById("finalTitleEn").textContent=`${enDir} ${selectedDateLabel}`;
     document.getElementById("finalMetaEn").innerHTML=`${enBoard}<br>${enDrop}`;
 
@@ -483,6 +483,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
