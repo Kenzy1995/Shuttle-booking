@@ -438,13 +438,23 @@ function selectStation(stationRaw){
 /* ====== 控制鈕 ====== */
 function goBack(step){ showStep(step); }
 function restart(){
+    // 重置選擇狀態
     selectedDirection="";
     selectedDateRaw="";
     selectedDateLabel="";
     selectedStationRaw="";
     selectedStationZh="";
     selectedStationEn="";
-    showStep(1);
+    allRows=[];
+
+    // 顯示 loading 畫面
+    document.getElementById("loading").style.display = "flex";
+
+    // 隱藏所有步驟
+    document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
+
+    // 重新抓取資料
+    loadData();
 }
 function bookNow(){ window.open(BOOK_URL,"_blank"); }
 
@@ -455,5 +465,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
