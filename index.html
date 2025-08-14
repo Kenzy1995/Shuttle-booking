@@ -452,7 +452,15 @@ function restart(){
   selectedStationRaw = "";
   selectedStationZh = "";
   selectedStationEn = "";
-  loadData(true); // 強制重新讀取最新資料並回到第一步
+
+  // 先顯示 loading 畫面
+  const loading = document.getElementById("loading");
+  loading.style.display = "flex";
+
+  // 抓資料 → 回 Step 1
+  loadData(true).then(() => {
+    showStep(1);
+  });
 }
 
 function bookNow(){
@@ -468,3 +476,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadData(true, true); // 靜默模式
   }, 3 * 60 * 1000);
 });
+
