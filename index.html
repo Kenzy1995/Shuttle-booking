@@ -23,7 +23,7 @@
   }
 
   /* steps */
-  .step{ display:none; text-align:center; margin-top:20px; }
+  .step{ display:none; margin-top:20px; }
   .active{ display:block; }
 
   /* groups */
@@ -50,7 +50,9 @@
     background:#e9e9e9; color:#333; border:none; border-radius:var(--radius);
     padding:12px 20px; font-size:16px; cursor:pointer;
     transition:background .2s;
-    min-width: 120px; /* 統一按鈕最小寬度 */
+    width: 160px; /* 統一按鈕寬度 */
+    text-align: center;
+    box-sizing: border-box;
   }
   .btn:hover{ background:#ddd; }
   .btn-orange{ background:var(--orange); color:#fff; }
@@ -71,12 +73,39 @@
   .card h3{ margin:0 0 8px; color:var(--orange); font-size:20px; }
   .card p{ margin:6px 0 0; color:#666; font-weight:600; }
 
-  /* titles（乾淨版型） */
-  .title{ font-size:24px; color:#000; margin:6px 0 0; font-weight:800; }
-  .subtitle{ font-size:16px; color:#000; margin:4px 0 18px; }
-  .title-en, .subtitle-en{ color:#888; }
-  .subtitle strong{ color:#444; }
-  .subtitle .muted{ color:var(--muted); }
+  /* titles（統一大小和對齊） */
+  .title-container {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .title, .subtitle {
+    font-size: 18px; /* 統一標題大小 */
+    color: #000; /* 全黑字體 */
+    margin: 6px 0;
+    font-weight: 600;
+  }
+  .title-en, .subtitle-en { 
+    color: var(--muted);
+    font-size: 16px; /* 英文稍小 */
+  }
+  .subtitle strong { color:#444; }
+  .subtitle .muted { color:var(--muted); }
+  
+  /* 響應式對齊 */
+  @media (max-width: 768px) {
+    .title-container {
+      text-align: left;
+      padding: 0 10px;
+    }
+    .info-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+    .info-label {
+      min-width: 80px;
+    }
+  }
 
   /* loading */
   #loading{
@@ -93,6 +122,15 @@
 
   /* header block spacing for final step */
   .header-block{ margin-bottom:8px; }
+  
+  /* 最終步驟的按鈕組 */
+  .final-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
 </style>
 </head>
 <body>
@@ -107,8 +145,10 @@
 
 <!-- Step 2: 選日期（乾淨標題） -->
 <div id="step2" class="step">
-  <div id="step2Title" class="title"></div>
-  <div id="step2Sub" class="subtitle">請選擇日期 / <span class="title-en">Please select a date</span></div>
+  <div class="title-container">
+    <div id="step2Title" class="title"></div>
+    <div class="subtitle">請選擇日期 / <span class="title-en">Please select a date</span></div>
+  </div>
   <div id="dateCards" class="card-group"></div>
   <div style="margin-top:16px">
     <button class="btn" onclick="goBack(1)">← 返回 / Back</button>
@@ -117,8 +157,10 @@
 
 <!-- Step 3: 選站點（乾淨標題＋雙語提示） -->
 <div id="step3" class="step">
-  <div id="step3Title" class="title"></div>
-  <div id="step3Sub" class="subtitle"></div>
+  <div class="title-container">
+    <div id="step3Title" class="title"></div>
+    <div id="step3Sub" class="subtitle"></div>
+  </div>
   <div id="stationCards" class="card-group"></div>
   <div style="margin-top:16px">
     <button class="btn" onclick="goBack(2)">← 返回 / Back</button>
@@ -127,17 +169,19 @@
 
 <!-- Step 4: 選班次（最終畫面：標題/副標題中英、卡片時間與名額、三顆按鈕） -->
 <div id="step4" class="step">
-  <div id="finalTitleZh" class="title header-block"></div>
-  <div id="finalMetaZh" class="subtitle header-block"></div>
-  <div id="finalTitleEn" class="title title-en header-block"></div>
-  <div id="finalMetaEn" class="subtitle subtitle-en header-block"></div>
+  <div class="title-container">
+    <div id="finalTitleZh" class="title header-block"></div>
+    <div id="finalMetaZh" class="subtitle header-block"></div>
+    <div id="finalTitleEn" class="title title-en header-block"></div>
+    <div id="finalMetaEn" class="subtitle subtitle-en header-block"></div>
+  </div>
 
   <div id="scheduleCards" class="card-group" style="margin-top:10px;"></div>
 
-  <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+  <div class="final-buttons">
     <button class="btn" onclick="goBack(3)">← 返回 / Back</button>
-    <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
-    <button class="btn btn-orange" onclick="bookNow()">📝 立即預約 / Book Now</button>
+    <button class="btn" onclick="restart()">↺ 重新查詢</button>
+    <button class="btn btn-orange" onclick="bookNow()">📝 立即預約</button>
   </div>
 </div>
 
@@ -279,8 +323,10 @@ function selectDate(dateRaw){
 
   const isReturn = selectedDirection === "回程";
   document.getElementById("step3Sub").innerHTML = isReturn
-    ? `下車點 <strong>Drop-off</strong>: 飯店 / Hotel<br>上車點 <strong>Boarding</strong>: <span class="muted">（請選擇 / Please select）</span>`
-    : `上車點 <strong>Boarding</strong>: 飯店 / Hotel<br>下車點 <strong>Drop-off</strong>: <span class="muted">（請選擇 / Please select）</span>`;
+    ? `<div class="info-line"><span class="info-label">下車站點 <strong>Drop-off</strong>:</span> 飯店 / Hotel</div>
+       <div class="info-line"><span class="info-label">上車站點 <strong>Boarding</strong>:</span> <span class="muted">（請選擇 / Please select）</span></div>`
+    : `<div class="info-line"><span class="info-label">上車站點 <strong>Boarding</strong>:</span> 飯店 / Hotel</div>
+       <div class="info-line"><span class="info-label">下車站點 <strong>Drop-off</strong>:</span> <span class="muted">（請選擇 / Please select）</span></div>`;
 
   // 站點列表
   const stations = new Set(
@@ -312,20 +358,26 @@ function selectStation(stationRaw){
   const enDir = selectedDirection === "回程" ? "Return" : "Departure";
 
   // 中文區
-  const zhBoard = selectedDirection === "回程" ? `上車站點：${selectedStationZh || "<span class='muted'>（未提供）</span>"}`
-                                                : `上車站點：飯店`;
-  const zhDrop  = selectedDirection === "回程" ? `下車站點：飯店`
-                                                : `下車站點：${selectedStationZh || "<span class='muted'>（未提供）</span>"}`;
+  const zhBoard = selectedDirection === "回程" 
+    ? `<div class="info-line"><span class="info-label">上車站點:</span> ${selectedStationZh || "<span class='muted'>（未提供）</span>"}</div>`
+    : `<div class="info-line"><span class="info-label">上車站點:</span> 飯店</div>`;
+  const zhDrop = selectedDirection === "回程" 
+    ? `<div class="info-line"><span class="info-label">下車站點:</span> 飯店</div>`
+    : `<div class="info-line"><span class="info-label">下車站點:</span> ${selectedStationZh || "<span class='muted'>（未提供）</span>"}</div>`;
+  
   document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
-  document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
+  document.getElementById("finalMetaZh").innerHTML = `${zhBoard}${zhDrop}`;
 
   // 英文區
-  const enBoard = selectedDirection === "回程" ? `Boarding: ${selectedStationEn || selectedStationZh || "N/A"}`
-                                                : `Boarding: Hotel`;
-  const enDrop  = selectedDirection === "回程" ? `Drop-off: Hotel`
-                                                : `Drop-off: ${selectedStationEn || selectedStationZh || "N/A"}`;
+  const enBoard = selectedDirection === "回程" 
+    ? `<div class="info-line"><span class="info-label">Boarding:</span> ${selectedStationEn || selectedStationZh || "N/A"}</div>`
+    : `<div class="info-line"><span class="info-label">Boarding:</span> Hotel</div>`;
+  const enDrop = selectedDirection === "回程" 
+    ? `<div class="info-line"><span class="info-label">Drop-off:</span> Hotel</div>`
+    : `<div class="info-line"><span class="info-label">Drop-off:</span> ${selectedStationEn || selectedStationZh || "N/A"}</div>`;
+  
   document.getElementById("finalTitleEn").textContent = `${enDir} ${selectedDateLabel}`;
-  document.getElementById("finalMetaEn").innerHTML = `${enBoard}<br>${enDrop}`;
+  document.getElementById("finalMetaEn").innerHTML = `${enBoard}${enDrop}`;
 
   // 篩出班次
   const list = allRows.filter(r =>
@@ -364,4 +416,3 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
-
