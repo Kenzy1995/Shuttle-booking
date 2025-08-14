@@ -1,244 +1,119 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>接駁車預約範例</title>
+<title>接駁車查詢系統</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #fff8f0;
-    margin: 0;
-    padding: 20px;
-  }
-
-  h2 {
-    text-align: center;
-    color: #ff7f2a;
-  }
-
-  .step {
-    display: none;
-    margin-top: 20px;
-    text-align: center;
-  }
-
-  .active {
-    display: block;
-  }
-
-  .button-group {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    background-color: #ff7f2a;
-    color: white;
-    padding: 15px 30px;
-    font-size: 18px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-
-  .card-group {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
-  }
-
-  .card {
-    background-color: white;
-    border-radius: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 20px;
-    width: 200px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-  }
-
-  .card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  }
-
-  .card h3 {
-    margin: 0 0 10px 0;
-    color: #ff7f2a;
-  }
-
-  .card p {
-    margin: 5px 0;
-    color: #555;
-  }
-
-  .back-btn {
-    margin-top: 20px;
-    background-color: #ccc;
-    color: #333;
-  }
-
-  .back-btn:hover {
-    background-color: #bbb;
-  }
+body { font-family: Arial, sans-serif; padding: 20px; }
+select { margin: 5px; padding: 5px; }
+.card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+}
 </style>
 </head>
 <body>
 
-<h2>接駁車預約範例</h2>
+<h2>接駁車班次查詢</h2>
+<label>去程/回程：</label>
+<select id="directionSelect"><option value="">請選擇</option></select>
 
-<!-- Step 1: 去程 / 回程 -->
-<div id="step1" class="step active">
-  <div class="button-group">
-    <button class="btn" onclick="selectDirection('去程')">🚗 去程</button>
-    <button class="btn" onclick="selectDirection('回程')">🏠 回程</button>
-  </div>
-</div>
+<label>日期：</label>
+<select id="dateSelect"><option value="">請選擇</option></select>
 
-<!-- Step 2: 日期 -->
-<div id="step2" class="step">
-  <h3 id="directionTitle"></h3>
-  <div class="card-group" id="dateCards"></div>
-  <button class="btn back-btn" onclick="goBack(1)">← 返回方向選擇</button>
-</div>
+<label>站點：</label>
+<select id="stationSelect"><option value="">請選擇</option></select>
 
-<!-- Step 3: 站點 -->
-<div id="step3" class="step">
-  <h3 id="dateTitle"></h3>
-  <div class="card-group" id="stationCards"></div>
-  <button class="btn back-btn" onclick="goBack(2)">← 返回日期選擇</button>
-</div>
-
-<!-- Step 4: 班次 -->
-<div id="step4" class="step">
-  <h3 id="stationTitle"></h3>
-  <div class="card-group" id="scheduleCards"></div>
-  <button class="btn back-btn" onclick="goBack(3)">← 返回站點選擇</button>
-</div>
+<div id="results"></div>
 
 <script>
-  // 假資料
-  const data = {
-    "去程": {
-      "2025-08-15": {
-        "捷運站": [
-          {time: "08:00", available: 5},
-          {time: "09:00", available: 0},
-          {time: "10:00", available: 8}
-        ],
-        "火車站": [
-          {time: "08:30", available: 2},
-          {time: "09:30", available: 4}
-        ],
-        "商場": [
-          {time: "09:00", available: 6}
-        ]
-      },
-      "2025-08-16": {
-        "捷運站": [
-          {time: "08:00", available: 3}
-        ]
-      }
-    },
-    "回程": {
-      "2025-08-15": {
-        "捷運站": [
-          {time: "18:00", available: 5}
-        ],
-        "火車站": [
-          {time: "18:30", available: 0}
-        ],
-        "商場": [
-          {time: "19:00", available: 7}
-        ]
-      }
-    }
-  };
+const sheetUrl = "https://docs.google.com/spreadsheets/d/1ndM-i4cVB96-DbK6gW-YSKktEPu6-T0cmZiCldbbRz0/gviz/tq?tqx=out:csv&sheet=可預約班次(web)";
 
-  let selectedDirection = '';
-  let selectedDate = '';
-  let selectedStation = '';
+let allData = [];
 
-  function showStep(stepNum) {
-    document.querySelectorAll('.step').forEach((el, idx) => {
-      el.classList.remove('active');
+fetch(sheetUrl)
+  .then(res => res.text())
+  .then(csv => {
+    const rows = csv.trim().split("\n").map(r => r.split(","));
+    const headers = rows[0];
+    allData = rows.slice(1).map(row => {
+      let obj = {};
+      headers.forEach((h, i) => obj[h.trim()] = row[i]?.trim());
+      return obj;
     });
-    document.getElementById('step' + stepNum).classList.add('active');
-  }
+    initDirectionSelect();
+  });
 
-  function selectDirection(direction) {
-    selectedDirection = direction;
-    document.getElementById('directionTitle').innerText = `選擇日期 (${direction})`;
+function initDirectionSelect() {
+  const directions = [...new Set(allData.map(r => r["去程 / 回程"]).filter(Boolean))];
+  const select = document.getElementById("directionSelect");
+  directions.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    select.appendChild(opt);
+  });
+}
 
-    const dates = Object.keys(data[direction]);
-    const dateCards = document.getElementById('dateCards');
-    dateCards.innerHTML = '';
+document.getElementById("directionSelect").addEventListener("change", function() {
+  const selectedDirection = this.value;
+  const filteredDates = [...new Set(allData
+    .filter(r => r["去程 / 回程"] === selectedDirection)
+    .map(r => r["日期"])
+    .filter(Boolean))];
+  const dateSelect = document.getElementById("dateSelect");
+  dateSelect.innerHTML = '<option value="">請選擇</option>';
+  filteredDates.forEach(date => {
+    const opt = document.createElement("option");
+    opt.value = date;
+    opt.textContent = date;
+    dateSelect.appendChild(opt);
+  });
+  document.getElementById("stationSelect").innerHTML = '<option value="">請選擇</option>';
+  document.getElementById("results").innerHTML = '';
+});
 
-    dates.forEach(date => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<h3>${date}</h3><p>班次: ${Object.keys(data[direction][date]).length}</p>`;
-      card.onclick = () => selectDate(date);
-      dateCards.appendChild(card);
-    });
+document.getElementById("dateSelect").addEventListener("change", function() {
+  const selectedDirection = document.getElementById("directionSelect").value;
+  const selectedDate = this.value;
+  const filteredStations = [...new Set(allData
+    .filter(r => r["去程 / 回程"] === selectedDirection && r["日期"] === selectedDate)
+    .map(r => r["站點"])
+    .filter(Boolean))];
+  const stationSelect = document.getElementById("stationSelect");
+  stationSelect.innerHTML = '<option value="">請選擇</option>';
+  filteredStations.forEach(station => {
+    const opt = document.createElement("option");
+    opt.value = station;
+    opt.textContent = station;
+    stationSelect.appendChild(opt);
+  });
+  document.getElementById("results").innerHTML = '';
+});
 
-    showStep(2);
-  }
+document.getElementById("stationSelect").addEventListener("change", function() {
+  const selectedDirection = document.getElementById("directionSelect").value;
+  const selectedDate = document.getElementById("dateSelect").value;
+  const selectedStation = this.value;
 
-  function selectDate(date) {
-    selectedDate = date;
-    document.getElementById('dateTitle').innerText = `選擇站點 (${selectedDirection} - ${date})`;
+  const filteredTrips = allData.filter(row =>
+    row["去程 / 回程"] === selectedDirection &&
+    row["日期"] === selectedDate &&
+    row["站點"] === selectedStation
+  );
 
-    const stations = Object.keys(data[selectedDirection][date]);
-    const stationCards = document.getElementById('stationCards');
-    stationCards.innerHTML = '';
-
-    stations.forEach(station => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<h3>${station}</h3>`;
-      card.onclick = () => selectStation(station);
-      stationCards.appendChild(card);
-    });
-
-    showStep(3);
-  }
-
-  function selectStation(station) {
-    selectedStation = station;
-    document.getElementById('stationTitle').innerText = `班次 (${selectedDirection} - ${selectedDate} - ${station})`;
-
-    const schedules = data[selectedDirection][selectedDate][station];
-    const scheduleCards = document.getElementById('scheduleCards');
-    scheduleCards.innerHTML = '';
-
-    schedules.forEach(sch => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `<h3>${sch.time}</h3>
-                        <p>剩餘人數: ${sch.available}</p>
-                        <button class="btn" onclick="alert('預約: ${sch.time}')">立即預約</button>`;
-      scheduleCards.appendChild(card);
-    });
-
-    showStep(4);
-  }
-
-  function goBack(stepNum) {
-    showStep(stepNum);
-  }
-
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = '';
+  filteredTrips.forEach(trip => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<b>${trip["班次"]}</b> - ${trip["可預約人數"]}`;
+    resultsDiv.appendChild(card);
+  });
+});
 </script>
 
 </body>
