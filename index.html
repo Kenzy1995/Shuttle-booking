@@ -36,6 +36,12 @@
     background:var(--orange); color:#fff; border:none; border-radius:var(--radius);
     padding:16px 28px; font-size:18px; cursor:pointer;
     transition:transform .2s, box-shadow .2s;
+    width: 240px; /* 統一按鈕寬度 */
+    height: 100px; /* 統一按鈕高度 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   .btn-primary:hover{ transform:scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,.2); }
 
@@ -44,6 +50,7 @@
     background:#e9e9e9; color:#333; border:none; border-radius:var(--radius);
     padding:12px 20px; font-size:16px; cursor:pointer;
     transition:background .2s;
+    min-width: 120px; /* 統一按鈕最小寬度 */
   }
   .btn:hover{ background:#ddd; }
   .btn-orange{ background:var(--orange); color:#fff; }
@@ -52,18 +59,24 @@
   /* cards 白底橘字 */
   .card{
     background:#fff; box-shadow:var(--card-shadow); border-radius:var(--radius);
-    padding:20px; width:240px; cursor:pointer; transition:transform .2s, box-shadow .2s;
+    padding:20px; width:240px; height: 100px; /* 統一卡片大小 */
+    cursor:pointer; transition:transform .2s, box-shadow .2s;
     color:var(--orange); white-space:pre-line;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
   .card:hover{ transform:scale(1.03); box-shadow:var(--card-shadow-hover); }
   .card h3{ margin:0 0 8px; color:var(--orange); font-size:20px; }
   .card p{ margin:6px 0 0; color:#666; font-weight:600; }
 
   /* titles（乾淨版型） */
-  .title{ font-size:28px; color:var(--orange); margin:6px 0 0; font-weight:800; }
-  .subtitle{ font-size:16px; color:#666; margin:4px 0 18px; }
+  .title{ font-size:24px; color:#000; margin:6px 0 0; font-weight:800; }
+  .subtitle{ font-size:16px; color:#000; margin:4px 0 18px; }
   .title-en, .subtitle-en{ color:#888; }
   .subtitle strong{ color:#444; }
+  .subtitle .muted{ color:var(--muted); }
 
   /* loading */
   #loading{
@@ -85,7 +98,7 @@
 <body>
 
 <!-- Step 1: 選方向（橘底白字按鈕） -->
-<div id="step1" class="step active">
+<div id="step1" class="step">
   <div class="button-group">
     <button class="btn-primary" onclick="selectDirection('去程')">🚗 去程<br>Departure (From Hotel)</button>
     <button class="btn-primary" onclick="selectDirection('回程')">🏠 回程<br>Return (To Hotel)</button>
@@ -221,6 +234,9 @@ async function loadData(){
     const raw = await res.json();
     // 不改動原值，但供 UI 顯示時做格式化
     allRows = raw.filter(r => r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+    
+    // 資料載入完成後才顯示第一步
+    document.getElementById("step1").classList.add("active");
   }catch(e){
     alert("資料載入失敗 / Failed to load data: " + e.message);
   }finally{
@@ -263,8 +279,8 @@ function selectDate(dateRaw){
 
   const isReturn = selectedDirection === "回程";
   document.getElementById("step3Sub").innerHTML = isReturn
-    ? `下車點 <strong>Drop-off</strong>: 飯店 / Hotel<br>上車點 <strong>Boarding</strong>: （請選擇 / Please select）`
-    : `上車點 <strong>Boarding</strong>: 飯店 / Hotel<br>下車點 <strong>Drop-off</strong>: （請選擇 / Please select）`;
+    ? `下車點 <strong>Drop-off</strong>: 飯店 / Hotel<br>上車點 <strong>Boarding</strong>: <span class="muted">（請選擇 / Please select）</span>`
+    : `上車點 <strong>Boarding</strong>: 飯店 / Hotel<br>下車點 <strong>Drop-off</strong>: <span class="muted">（請選擇 / Please select）</span>`;
 
   // 站點列表
   const stations = new Set(
@@ -296,10 +312,10 @@ function selectStation(stationRaw){
   const enDir = selectedDirection === "回程" ? "Return" : "Departure";
 
   // 中文區
-  const zhBoard = selectedDirection === "回程" ? `上車站點：${selectedStationZh || "（未提供）"}`
+  const zhBoard = selectedDirection === "回程" ? `上車站點：${selectedStationZh || "<span class='muted'>（未提供）</span>"}`
                                                 : `上車站點：飯店`;
   const zhDrop  = selectedDirection === "回程" ? `下車站點：飯店`
-                                                : `下車站點：${selectedStationZh || "（未提供）"}`;
+                                                : `下車站點：${selectedStationZh || "<span class='muted'>（未提供）</span>"}`;
   document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
   document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
 
