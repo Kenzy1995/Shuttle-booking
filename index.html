@@ -21,23 +21,9 @@ body{
     margin:0;
     padding:20px;
     color:var(--text);
-    min-height: 100vh; /* 新增：確保 body 有最小高度 */
 }
 
-/* ====== steps ====== */
-.step{
-    display:none;
-    min-height: 70vh; /* 修改：調整最小高度 */
-    display: flex; /* 新增 */
-    flex-direction: column; /* 新增 */
-    justify-content: center; /* 新增：垂直居中 */
-    align-items: center; /* 新增：水平居中 */
-}
-.active{
-    display:flex; /* 修改：從 block 改為 flex */
-}
-
-/* ====== 新增標題樣式 ====== */
+/* ====== 新增首頁標題樣式 ====== */
 .step-title-container {
     text-align: center;
     margin-bottom: 30px;
@@ -55,6 +41,24 @@ body{
     font-weight: normal;
 }
 
+/* ====== steps ====== */
+.step{
+    display:none;
+    margin-top:20px;
+}
+.active{
+    display:block;
+}
+
+/* ====== 首頁專用容器 ====== */
+.step1-active-container {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 /* ====== groups ====== */
 .button-group,
 .card-group{
@@ -62,7 +66,6 @@ body{
     justify-content:center;
     flex-wrap:wrap;
     gap:20px;
-    width: 100%;
 }
 
 /* ====== primary buttons ====== */
@@ -176,7 +179,7 @@ body{
 /* ====== responsive ====== */
 @media (max-width: 768px) {
     .title-container { text-align: left; padding:0 10px; }
-    .step-title-container { padding: 0 15px; } /* 新增 */
+    .step-title-container { padding: 0 15px; }
     .info-line { display:block; text-align:left; margin-bottom:8px; }
     .info-label { display:inline-block; min-width:100px; text-align:right; margin-right:5px; }
     .final-buttons { flex-direction: column; align-items: center; }
@@ -236,23 +239,23 @@ body{
 
 <!-- Step 1: 選方向 -->
 <div id="step1" class="step">
-    <!-- 新增的標題區塊 -->
-    <div class="step-title-container">
-        <div class="step-title">查詢目前尚可預約班次</div>
-        <div class="step-title-en">Currently Available Schedules</div>
-    </div>
-    
-    <div class="button-group">
-        <button class="btn-primary" onclick="selectDirection('去程')">
-            去程<br>Departure (From Hotel)
-        </button>
-        <button class="btn-primary" onclick="selectDirection('回程')">
-            回程<br>Return (To Hotel)
-        </button>
+    <div class="step1-active-container">
+        <div class="step-title-container">
+            <div class="step-title">查詢目前尚可預約班次</div>
+            <div class="step-title-en">Currently Available Schedules</div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="selectDirection('去程')">
+                去程<br>Departure (From Hotel)
+            </button>
+            <button class="btn-primary" onclick="selectDirection('回程')">
+                回程<br>Return (To Hotel)
+            </button>
+        </div>
     </div>
 </div>
 
-<!-- 其餘步驟保持不變 -->
 <!-- Step 2: 選日期 -->
 <div id="step2" class="step">
     <div class="title-container">
@@ -467,8 +470,11 @@ function selectStation(stationRaw){
         card.className = "card";
         card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
         
-        // 點擊卡片直接跳轉
-        card.onclick = () => window.open(BOOK_URL, "_blank");
+        // 修正點擊事件：直接跳轉不冒泡
+        card.addEventListener('click', function(e) {
+            e.stopPropagation();
+            window.open(BOOK_URL, "_blank");
+        });
         
         wrap.appendChild(card);
     });
@@ -497,7 +503,6 @@ function restart(){
     // 重新抓取資料
     loadData();
 }
-
 
 /* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async ()=>{
