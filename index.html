@@ -91,14 +91,16 @@
     margin: 6px 0;
     font-weight: normal;
   }
-  .title-en, .subtitle-en { 
-    color: #000; /* 英文改為黑色 */
-    font-size: 18px; /* 統一英文大小 */
+  .title-en { 
+    color: #000;
+    font-size: 22px; /* 改為與中文標題相同的 22px */
+    font-weight: 600; /* 改為與中文標題相同的粗體 */
+  }
+  .subtitle-en {
+    color: #000;
+    font-size: 18px;
     font-weight: normal;
   }
-  .subtitle strong { color:#444; }
-  .subtitle .muted { color:var(--muted); }
-  
   /* 響應式對齊 */
   @media (max-width: 768px) {
     .title-container {
@@ -445,5 +447,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
+
 
 
