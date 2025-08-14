@@ -176,7 +176,7 @@
 <div id="step2" class="step">
   <div class="title-container">
     <div id="step2Title" class="title"></div>
-    <div class="subtitle" style="color: var(--muted);">請選擇日期 / <span class="title-en">Please select a date</span></div>
+    <div class="subtitle" style="color: var(--muted);">*請選擇日期 / <span class="title-en">Please select a date</span></div>
   </div>
   <div id="dateCards" class="card-group"></div>
   <div style="margin-top:16px; text-align:center;">
@@ -353,9 +353,9 @@ function selectDate(dateRaw){
   const isReturn = selectedDirection === "回程";
   document.getElementById("step3Sub").innerHTML = isReturn
     ? `<div class="station-info">下車站點 Drop-off: 飯店 / Hotel</div>
-       <div class="station-info">上車站點 Boarding: <span class="muted">（請選擇 / Please select）</span></div>`
+       <div class="station-info">上車站點 Boarding: <span class="muted">*請選擇 / Please select</span></div>`
     : `<div class="station-info">上車站點 Boarding: 飯店 / Hotel</div>
-       <div class="station-info">下車站點 Drop-off: <span class="muted">（請選擇 / Please select）</span></div>`;
+       <div class="station-info">下車站點 Drop-off: <span class="muted">*請選擇 / Please select</span></div>`;
 
   // 站點列表
   const stations = new Set(
@@ -445,4 +445,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
+
 
