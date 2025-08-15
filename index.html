@@ -177,8 +177,31 @@ body{
 }
 
 /* ====== responsive ====== */
-/* 手機版：按鈕上下排列，立即預約在最下面 */
+/* 手機版 (max-width: 768px) */
 @media (max-width: 768px) {
+    /* 標題置左 */
+    .title-container {
+        text-align: left;
+        padding: 0 10px;
+    }
+    .step-title-container {
+        padding: 0 15px;
+    }
+
+    /* 資訊列置左 */
+    .info-line {
+        display: block;
+        text-align: left;
+        margin-bottom: 8px;
+    }
+    .info-label {
+        display: inline-block;
+        min-width: 100px;
+        text-align: right;
+        margin-right: 5px;
+    }
+
+    /* 最終步驟按鈕調整 */
     .final-buttons {
         flex-direction: column;
         align-items: center;
@@ -189,17 +212,28 @@ body{
     }
 }
 
-/* 桌機版：按鈕左右排列，立即預約在最右邊 */
+/* 桌機版 (min-width: 769px) */
 @media (min-width: 769px) {
+    /* 標題置中 */
+    .title-container {
+        text-align: center;
+    }
+    .step-title-container {
+        text-align: center;
+    }
+    .info-line {
+        text-align: center;
+    }
+
+    /* 最終步驟按鈕排列 */
     .final-buttons {
         flex-direction: row;
-        justify-content: center; /* 按鈕水平排列置中 */
+        justify-content: center;
     }
     .final-buttons .btn {
-        min-width: 160px; /* 所有按鈕大小一致 */
+        min-width: 160px;
     }
 }
-
 
 /* ====== loading ====== */
 #loading{
@@ -531,5 +565,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
