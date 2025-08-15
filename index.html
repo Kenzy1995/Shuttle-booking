@@ -124,7 +124,6 @@ body{
     border-radius:var(--radius);
     padding:20px;
     width:240px;
-    height:100px;
     cursor:pointer;
     transition:transform .2s, box-shadow .2s;
     color:var(--orange);
@@ -233,6 +232,31 @@ body{
     margin:10px 0;
     line-height:1.5;
 }
+
+/* ====== 新增立即預約按鈕樣式 ====== */
+.book-now-btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background .2s;
+}
+.book-now-btn:hover {
+    filter: brightness(.95);
+}
+
+/* ====== 班次卡片容器 ====== */
+.schedule-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
 </style>
 </head>
 <body>
@@ -292,7 +316,10 @@ body{
         <div id="finalTitleEn" class="title title-en header-block"></div>
         <div id="finalMetaEn" class="subtitle subtitle-en header-block"></div>
     </div>
-    <div id="scheduleCards" class="card-group" style="margin-top:10px;"></div>
+    <div class="schedule-card-container">
+        <div id="scheduleCards" class="card-group"></div>
+        <button id="bookNowBtn" class="book-now-btn" style="display:none;">立即預約 / Book Now</button>
+    </div>
     <div class="final-buttons">
         <button class="btn" onclick="goBack(3)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
@@ -318,6 +345,7 @@ let selectedDateLabel = "";
 let selectedStationRaw = "";
 let selectedStationZh = "";
 let selectedStationEn = "";
+let selectedSchedule = null;
 
 /* ====== 工具函數 ====== */
 function fmtDateLabel(v){
@@ -455,7 +483,7 @@ function selectStation(stationRaw){
     document.getElementById("finalTitleEn").textContent=`${enDir} ${selectedDateLabel}`;
     document.getElementById("finalMetaEn").innerHTML=`${enBoard}<br>${enDrop}`;
 
-   const list = allRows.filter(r => 
+    const list = allRows.filter(r => 
         String(r["去程 / 回程"]).trim() === selectedDirection &&
         String(r["日期"]).trim() === selectedDateRaw &&
         String(r["站點"]).trim() === selectedStationRaw
@@ -463,6 +491,12 @@ function selectStation(stationRaw){
 
     const wrap = document.getElementById("scheduleCards");
     wrap.innerHTML = "";
+    
+    // 隱藏立即預約按鈕
+    const bookNowBtn = document.getElementById("bookNowBtn");
+    bookNowBtn.style.display = "none";
+    selectedSchedule = null;
+    
     list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
         const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
@@ -470,14 +504,32 @@ function selectStation(stationRaw){
         card.className = "card";
         card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
         
-        // 修正點擊事件：直接跳轉不冒泡
-        card.addEventListener('click', function(e) {
-            e.stopPropagation();
-            window.open(BOOK_URL, "_blank");
+        // 點擊班次卡片時，選中該班次並顯示立即預約按鈕
+        card.addEventListener('click', function() {
+            // 移除所有卡片的選中狀態
+            document.querySelectorAll('#scheduleCards .card').forEach(c => {
+                c.style.background = '#fff';
+            });
+            
+            // 設置當前卡片為選中狀態
+            card.style.background = '#fff6e5';
+            selectedSchedule = r;
+            
+            // 顯示立即預約按鈕
+            bookNowBtn.style.display = "block";
         });
         
         wrap.appendChild(card);
     });
+
+    // 設置立即預約按鈕的點擊事件
+    bookNowBtn.onclick = function() {
+        if (selectedSchedule) {
+            window.open(BOOK_URL, "_blank");
+        } else {
+            alert("請先選擇一個班次 / Please select a schedule first");
+        }
+    };
 
     showStep(4);
 }
@@ -492,6 +544,7 @@ function restart(){
     selectedStationRaw="";
     selectedStationZh="";
     selectedStationEn="";
+    selectedSchedule = null;
     allRows=[];
 
     // 顯示 loading 畫面
