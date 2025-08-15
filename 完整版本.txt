@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>可預約班次查詢 / Available Slots</title>
+<style>
+:root{
+    --orange:#ff7f2a;
+    --bg:#fff6ef;
+    --text:#333;
+    --muted:#777;
+    --card-shadow:0 2px 8px rgba(0,0,0,.1);
+    --card-shadow-hover:0 6px 20px rgba(0,0,0,.2);
+    --radius:15px;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    margin:0;
+    padding:20px;
+    color:var(--text);
+}
+
+/* ====== 新增首頁標題樣式 ====== */
+.step-title-container {
+    text-align: center;
+    margin-bottom: 30px;
+    width: 100%;
+}
+.step-title {
+    font-size: 24px;
+    color: var(--text);
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+.step-title-en {
+    font-size: 20px;
+    color: var(--muted);
+    font-weight: normal;
+}
+
+/* ====== steps ====== */
+.step{
+    display:none;
+    margin-top:20px;
+    padding-bottom: 50px; /* 每個 step 底部空間 */
+}
+.active{
+    display:block;
+}
+
+/* ====== 首頁專用容器 ====== */
+.step1-active-container {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ====== groups ====== */
+.button-group,
+.card-group{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-bottom: 30px; /* 卡片與下方按鈕間距 */
+}
+
+/* ====== primary buttons ====== */
+.btn-primary{
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    padding:16px 28px;
+    font-size:18px;
+    cursor:pointer;
+    transition:transform .2s, box-shadow .2s;
+    width: 240px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 20px; /* 按鈕上方空間 */
+}
+.btn-primary:hover{
+    transform:scale(1.05);
+    box-shadow:0 4px 15px rgba(0,0,0,.2);
+}
+
+/* ====== normal buttons ====== */
+.btn{
+    background:#e9e9e9;
+    color:#333;
+    border:none;
+    border-radius:var(--radius);
+    padding:12px 20px;
+    font-size:16px;
+    cursor:pointer;
+    transition:background .2s;
+    min-width: 220px;
+    text-align: center;
+    box-sizing: border-box;
+    margin: 5px 0;
+    white-space: nowrap;
+}
+.btn:hover{
+    background:#ddd;
+}
+.btn-orange{
+    background:var(--orange);
+    color:#fff;
+}
+.btn-orange:hover{
+    filter:brightness(.95);
+}
+
+/* ====== cards ====== */
+.card{
+    background:#fff;
+    box-shadow:var(--card-shadow);
+    border-radius:var(--radius);
+    padding:20px;
+    width:240px;
+    height:100px;
+    cursor:pointer;
+    transition:transform .2s, box-shadow .2s;
+    color:var(--orange);
+    white-space:pre-line;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px; /* 卡片間距 */
+}
+.card:hover{
+    transform:scale(1.03);
+    box-shadow:var(--card-shadow-hover);
+}
+.card h3{
+    margin:0 0 8px;
+    color:var(--orange);
+    font-size:20px;
+}
+.card p{
+    margin:6px 0 0;
+    color:#666;
+    font-weight:600;
+}
+
+/* ====== titles ====== */
+.title-container {
+    margin-bottom: 18px;
+}
+.title {
+    font-size: 22px;
+    color: #000;
+    margin: 6px 0 20px; /* 標題與下方內容間距 */
+    font-weight: 600;
+}
+.subtitle {
+    font-size: 18px;
+    color: #000;
+    margin: 6px 0 20px; /* 副標題與下方內容間距 */
+    font-weight: normal;
+}
+.title-en {
+    color: #000;
+    font-size: 22px;
+    font-weight: 600;
+}
+.subtitle-en {
+    color: #000;
+    font-size: 18px;
+    font-weight: normal;
+}
+
+/* ====== responsive ====== */
+/* 手機版 (max-width: 768px) */
+@media (max-width: 768px) {
+    .title-container {
+        text-align: left;
+        padding: 0 10px;
+    }
+    .step-title-container {
+        padding: 0 15px;
+    }
+    .info-line {
+        display: block;
+        text-align: left;
+        margin-bottom: 8px;
+    }
+    .info-label {
+        display: inline-block;
+        min-width: 100px;
+        text-align: right;
+        margin-right: 5px;
+    }
+    .final-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    .final-buttons .btn {
+        width: 100%;
+        max-width: 280px;
+        margin-top: 15px;
+    }
+}
+
+/* 桌機版 (min-width: 769px) */
+@media (min-width: 769px) {
+    .title-container {
+        text-align: center;
+    }
+    .step-title-container {
+        text-align: center;
+    }
+    .info-line {
+        text-align: center;
+    }
+    .final-buttons {
+        flex-direction: row;
+        justify-content: center;
+    }
+    .final-buttons .btn {
+        min-width: 160px;
+    }
+}
+
+/* ====== loading ====== */
+#loading{
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,.94);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    color:var(--orange);
+    font-size:18px;
+}
+.loader{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:4px solid #f2f2f2;
+    border-top:4px solid var(--orange);
+    animation:spin 1s linear infinite;
+    margin-bottom:10px;
+}
+@keyframes spin{
+    to{ transform:rotate(360deg); }
+}
+
+/* ====== header block spacing ====== */
+.header-block{ margin-bottom:8px; }
+.final-buttons{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.station-info{
+    margin:10px 0;
+    line-height:1.5;
+}
+
+/* ====== 新增間距 ====== */
+.step-title-container { margin-bottom: 40px; }
+.card-group { margin-bottom: 30px; }
+.step button { margin-top: 20px; }
+
+</style>
+</head>
+<body>
+<!-- Step 1: 選方向 -->
+<div id="step1" class="step">
+    <div class="step1-active-container">
+        <div class="step-title-container">
+            <div class="step-title">查詢目前尚可預約班次</div>
+            <div class="step-title-en">Currently Available Schedules</div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="selectDirection('去程')">
+                去程<br>Departure (From Hotel)
+            </button>
+            <button class="btn-primary" onclick="selectDirection('回程')">
+                回程<br>Return (To Hotel)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Step 2: 選日期 -->
+<div id="step2" class="step">
+    <div class="title-container">
+        <div id="step2Title" class="title"></div>
+        <div class="subtitle" style="color: var(--muted);">
+            *請選擇日期 / Please select a date
+        </div>
+    </div>
+    <div id="dateCards" class="card-group"></div>
+    <div style="margin-top:16px; text-align:center;">
+        <button class="btn" onclick="goBack(1)">← 返回 / Back</button>
+        <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
+    </div>
+</div>
+
+<!-- Step 3: 選站點 -->
+<div id="step3" class="step">
+    <div class="title-container">
+        <div id="step3Title" class="title"></div>
+        <div id="step3Sub" class="subtitle"></div>
+    </div>
+    <div id="stationCards" class="card-group"></div>
+    <div style="margin-top:16px; text-align:center;">
+        <button class="btn" onclick="goBack(2)">← 返回 / Back</button>
+        <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
+    </div>
+</div>
+
+<!-- Step 4: 選班次 -->
+<div id="step4" class="step">
+    <div class="title-container">
+        <div id="finalTitleZh" class="title header-block"></div>
+        <div id="finalMetaZh" class="subtitle header-block"></div>
+        <div id="finalTitleEn" class="title title-en header-block"></div>
+        <div id="finalMetaEn" class="subtitle subtitle-en header-block"></div>
+    </div>
+    <div id="scheduleCards" class="card-group" style="margin-top:10px;"></div>
+    <div class="final-buttons">
+        <button class="btn" onclick="goBack(3)">← 返回 / Back</button>
+        <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
+        <button class="btn btn-orange" onclick="window.open(BOOK_URL, '_blank')">立即預約 / Book now</button>
+    </div>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+    <div class="loader"></div>
+    <div style="color: black;">資料讀取中 / Loading data…</div>
+</div>
+
+<script>
+/* ====== 配置 ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
+const BOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScVlCdt19OAsW-nEdd-eKhm5zs6cZGtTyVEJ-_ZcoV52lKoKg/viewform";
+
+/* ====== 狀態 ====== */
+let allRows = [];
+let selectedDirection = "";
+let selectedDateRaw = "";
+let selectedDateLabel = "";
+let selectedStationRaw = "";
+let selectedStationZh = "";
+let selectedStationEn = "";
+
+/* ====== 工具函數 ====== */
+function fmtDateLabel(v){
+    if(!v) return "";
+    const s = String(v).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)) return s.slice(0,10);
+    if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)){
+        const [y,m,d] = s.split("/");
+        return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    }
+    if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)){
+        const [m,d,y] = s.split("/");
+        return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    }
+    return s;
+}
+
+function fmtTimeLabel(v){
+    if(v===null||v===undefined) return "";
+    const s = String(v).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)) return s.slice(11,16);
+    const colon = s.replace("：", ":");
+    if(/^\d{1,2}:\d{1,2}/.test(colon)){
+        let [h,m] = colon.split(":");
+        return `${String(h).padStart(2,"0")}:${String(m).slice(0,2).padStart(2,"0")}`;
+    }
+    const num = Number(s);
+    if(!Number.isNaN(num) && num>=0 && num<2){
+        const mins = Math.round((num%1)*24*60);
+        const hh = String(Math.floor(mins/60)).padStart(2,"0");
+        const mm = String(mins%60).padStart(2,"0");
+        return `${hh}:${mm}`;
+    }
+    return s;
+}
+
+function splitStationZhEn(name){
+    const s = (name||"").trim();
+    const i = s.search(/[A-Za-z]/);
+    if(i>0){
+        return { zh:s.slice(0,i).trim(), en:s.slice(i).trim() };
+    }
+    return { zh:s, en:"" };
+}
+
+function stationWithBreak(name){
+    const {zh,en} = splitStationZhEn(name);
+    return en ? `${zh}\n${en}` : zh;
+}
+
+/* ====== UI ====== */
+function showStep(n){
+    document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
+    document.getElementById(`step${n}`).classList.add("active");
+}
+
+/* ====== 資料載入 ====== */
+async function loadData(){
+    const loading = document.getElementById("loading");
+    loading.style.display = "flex";
+    try{
+        const res = await fetch(API_URL);
+        const raw = await res.json();
+        allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+        document.getElementById("step1").classList.add("active");
+    }catch(e){
+        alert("資料讀取中 / Loading data: " + e.message);
+    }finally{
+        loading.style.display="none";
+    }
+}
+
+/* ====== 流程 ====== */
+function selectDirection(dir){
+    selectedDirection = dir;
+    const dirEn = dir==="回程"?"Return (To Hotel)":"Departure (From Hotel)";
+    document.getElementById("step2Title").textContent = `${dir} ${dirEn}`;
+
+    // 取得日期集合
+    const dateSet = new Set(
+        allRows
+            .filter(r => String(r["去程 / 回程"]).trim() === dir)
+            .map(r => String(r["日期"]).trim())
+    );
+
+    const cards = document.getElementById("dateCards");
+    cards.innerHTML = "";
+
+    [...dateSet].forEach(dateRaw => {
+        const dateLabel = fmtDateLabel(dateRaw);
+        // ★ 統計當日可預約班次數量
+        const count = allRows.filter(r =>
+            String(r["去程 / 回程"]).trim() === dir &&
+            String(r["日期"]).trim() === dateRaw
+        ).length;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h3>${dateLabel}</h3>
+
+                          </p>`;
+        card.onclick = () => selectDate(dateRaw);
+        cards.appendChild(card);
+    });
+
+    showStep(2);
+}
+
+function selectDate(dateRaw){
+    selectedDateRaw = String(dateRaw).trim();
+    selectedDateLabel = fmtDateLabel(selectedDateRaw);
+    document.getElementById("step3Title").textContent = `${selectedDirection} ${selectedDateLabel}`;
+
+    const isReturn = selectedDirection === "回程";
+    document.getElementById("step3Sub").innerHTML = isReturn ?
+        `<div class="station-info">下車站點 Drop-off: 福泰大飯店 Forte Hotel</div>
+         <div class="station-info">上車站點 Pick-up: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>` :
+        `<div class="station-info">上車站點 Pick-up: 福泰大飯店 Forte Hotel</div>
+         <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`;
+
+    // 取得站點集合
+    const stations = new Set(
+        allRows
+            .filter(r =>
+                String(r["去程 / 回程"]).trim() === selectedDirection &&
+                String(r["日期"]).trim() === selectedDateRaw
+            )
+            .map(r => String(r["站點"]).trim())
+    );
+
+    const wrap = document.getElementById("stationCards");
+    wrap.innerHTML = "";
+
+    [...stations].forEach(st => {
+        // ★ 統計該站點剩餘可預約班次數量
+        const count = allRows.filter(r =>
+            String(r["去程 / 回程"]).trim() === selectedDirection &&
+            String(r["日期"]).trim() === selectedDateRaw &&
+            String(r["站點"]).trim() === st
+        ).length;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h3>${stationWithBreak(st)}</h3>
+
+                          </p>`;
+        card.onclick = () => selectStation(st);
+        wrap.appendChild(card);
+    });
+
+    showStep(3);
+}
+
+
+function selectStation(stationRaw){
+    selectedStationRaw = String(stationRaw).trim();
+    const { zh,en } = splitStationZhEn(selectedStationRaw);
+    selectedStationZh = zh;
+    selectedStationEn = en;
+
+    const zhDir = selectedDirection==="回程"?"回程":"去程";
+    const enDir = selectedDirection==="回程"?"Return":"Departure";
+    const zhBoard = selectedDirection==="回程" ? `上車站點: ${selectedStationZh||"（未提供）"}` : `上車站點: 福泰大飯店`;
+    const zhDrop  = selectedDirection==="回程" ? `下車站點: 福泰大飯店` : `下車站點: ${selectedStationZh||"（未提供）"}`;
+
+    document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
+
+    const enBoard = selectedDirection==="回程" ? `Pick-up: ${selectedStationEn||selectedStationZh||"N/A"}` : `Pick-up: Forte Hotel`;
+    const enDrop  = selectedDirection==="回程" ? `Drop-off: Forte Hotel` : `Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
+
+    document.getElementById("finalTitleEn").textContent = `${enDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaEn").innerHTML = `${enBoard}<br>${enDrop}`;
+
+    const list = allRows.filter(r => 
+        String(r["去程 / 回程"]).trim() === selectedDirection &&
+        String(r["日期"]).trim() === selectedDateRaw &&
+        String(r["站點"]).trim() === selectedStationRaw
+    );
+
+    const wrap = document.getElementById("scheduleCards");
+    wrap.innerHTML = "";
+
+    // 這裡的卡片不再有跳轉事件
+    list.forEach(r => {
+        const timeLabel = fmtTimeLabel(r["班次"]);
+        const availText = String(r["可預約人數"] || r["可約人數 / Available"] || "").trim();
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
+        wrap.appendChild(card);
+    });
+
+    showStep(4);
+}
+
+
+/* ====== 控制鈕 ====== */
+function goBack(step){ showStep(step); }
+function restart(){
+    // 重置選擇狀態
+    selectedDirection="";
+    selectedDateRaw="";
+    selectedDateLabel="";
+    selectedStationRaw="";
+    selectedStationZh="";
+    selectedStationEn="";
+    allRows=[];
+
+    // 顯示 loading 畫面
+    document.getElementById("loading").style.display = "flex";
+
+    // 隱藏所有步驟
+    document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
+
+    // 重新抓取資料
+    loadData();
+}
+
+/* ====== 啟動 ====== */
+document.addEventListener("DOMContentLoaded", async ()=>{
+    await loadData();
+
+    // ====== 靜默刷新 ======
+    const REFRESH_INTERVAL = 15 * 60 * 1000; // 15分鐘
+    async function silentRefresh(){
+        try {
+            const res = await fetch(API_URL);
+            const raw = await res.json();
+            allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
+            console.log("資料已靜默刷新", new Date().toLocaleTimeString());
+        } catch(e){
+            console.warn("靜默刷新失敗:", e.message);
+        }
+    }
+    // 每 15 分鐘自動刷新
+    setInterval(silentRefresh, REFRESH_INTERVAL);
+});
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
