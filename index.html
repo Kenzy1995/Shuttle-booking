@@ -460,8 +460,7 @@ function selectDirection(dir){
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `<h3>${dateLabel}</h3>
-                          <p style="color:var(--muted);font-size:14px;">
-                          剩餘班次 / Available Schedules: ${count}
+
                           </p>`;
         card.onclick = () => selectDate(dateRaw);
         cards.appendChild(card);
@@ -506,8 +505,7 @@ function selectDate(dateRaw){
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `<h3>${stationWithBreak(st)}</h3>
-                          <p style="color:var(--muted);font-size:14px;">
-                          剩餘班次 / Available Schedules: ${count} 
+
                           </p>`;
         card.onclick = () => selectStation(st);
         wrap.appendChild(card);
@@ -604,6 +602,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
