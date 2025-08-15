@@ -547,7 +547,7 @@ function selectStation(stationRaw){
     // 這裡的卡片不再有跳轉事件
     list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
-        const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
+        const availText = String(r["可預約人數"] || r["可約人數 / Available"] || "").trim();
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
@@ -602,6 +602,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
