@@ -21,6 +21,7 @@ HTML/CSS/JavaScript 製作的班次查詢 Web App，提供使用者方便查詢�
 - HTML / CSS / JavaScript
 - Google Apps Script API
 - 響應式設計 (Flexbox)
-- GitHub Pages（可選部署）
+- GitHub
+- Netlify
 
 
