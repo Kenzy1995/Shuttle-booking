@@ -177,23 +177,29 @@ body{
 }
 
 /* ====== responsive ====== */
+/* 手機版：上下排列，立即預約在最下面 */
 @media (max-width: 768px) {
-    .title-container { text-align: left; padding:0 10px; }
-    .step-title-container { padding: 0 15px; }
-    .info-line { display:block; text-align:left; margin-bottom:8px; }
-    .info-label { display:inline-block; min-width:100px; text-align:right; margin-right:5px; }
-    .final-buttons { flex-direction: column; align-items: center; }
-    
-    /* 手機版按鈕調整 */
-    .btn-primary {
+    .final-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    .final-buttons .btn {
         width: 100%;
         max-width: 280px;
     }
 }
+
+/* 桌機版：左右排列，立即預約在最右邊 */
 @media (min-width: 769px) {
-    .title-container { text-align:center; }
-    .info-line { text-align:center; }
+    .final-buttons {
+        flex-direction: row;
+        justify-content: center; /* 讓按鈕左右排列置中 */
+    }
+    .final-buttons .btn {
+        min-width: 160px; /* 控制所有按鈕大小一致 */
+    }
 }
+
 
 /* ====== loading ====== */
 #loading{
@@ -281,6 +287,7 @@ body{
     <div style="margin-top:16px; text-align:center;">
         <button class="btn" onclick="goBack(2)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
+        <button class="btn btn-orange" onclick="window.open(BOOK_URL, '_blank')">立即預約</button>
     </div>
 </div>
 
@@ -445,17 +452,19 @@ function selectStation(stationRaw){
 
     const zhDir = selectedDirection==="回程"?"回程":"去程";
     const enDir = selectedDirection==="回程"?"Return":"Departure";
-    const zhBoard = selectedDirection==="回程"?`上車站點: ${selectedStationZh||"（未提供）"}`:`上車站點: 福泰大飯店`;
-    const zhDrop = selectedDirection==="回程"?`下車站點: 福泰大飯店`:`下車站點: ${selectedStationZh||"（未提供）"}`;
-    document.getElementById("finalTitleZh").textContent=`${zhDir} ${selectedDateLabel}`;
-    document.getElementById("finalMetaZh").innerHTML=`${zhBoard}<br>${zhDrop}`;
+    const zhBoard = selectedDirection==="回程" ? `上車站點: ${selectedStationZh||"（未提供）"}` : `上車站點: 福泰大飯店`;
+    const zhDrop  = selectedDirection==="回程" ? `下車站點: 福泰大飯店` : `下車站點: ${selectedStationZh||"（未提供）"}`;
 
-    const enBoard = selectedDirection==="回程"?`Boarding: ${selectedStationEn||selectedStationZh||"N/A"}`:`Boarding: Forte Hotel`;
-    const enDrop = selectedDirection==="回程"?`Drop-off: Forte Hotel`:`Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
-    document.getElementById("finalTitleEn").textContent=`${enDir} ${selectedDateLabel}`;
-    document.getElementById("finalMetaEn").innerHTML=`${enBoard}<br>${enDrop}`;
+    document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
 
-   const list = allRows.filter(r => 
+    const enBoard = selectedDirection==="回程" ? `Boarding: ${selectedStationEn||selectedStationZh||"N/A"}` : `Boarding: Forte Hotel`;
+    const enDrop  = selectedDirection==="回程" ? `Drop-off: Forte Hotel` : `Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
+
+    document.getElementById("finalTitleEn").textContent = `${enDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaEn").innerHTML = `${enBoard}<br>${enDrop}`;
+
+    const list = allRows.filter(r => 
         String(r["去程 / 回程"]).trim() === selectedDirection &&
         String(r["日期"]).trim() === selectedDateRaw &&
         String(r["站點"]).trim() === selectedStationRaw
@@ -463,24 +472,20 @@ function selectStation(stationRaw){
 
     const wrap = document.getElementById("scheduleCards");
     wrap.innerHTML = "";
+
+    // 這裡的卡片不再有跳轉事件
     list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
         const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `<h3>${timeLabel}</h3><p>${availText}</p>`;
-        
-        // 修正點擊事件：直接跳轉不冒泡
-        card.addEventListener('click', function(e) {
-            e.stopPropagation();
-            window.open(BOOK_URL, "_blank");
-        });
-        
         wrap.appendChild(card);
     });
 
     showStep(4);
 }
+
 
 /* ====== 控制鈕 ====== */
 function goBack(step){ showStep(step); }
