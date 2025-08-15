@@ -436,18 +436,35 @@ function selectDirection(dir){
     selectedDirection = dir;
     const dirEn = dir==="回程"?"Return (To Hotel)":"Departure (From Hotel)";
     document.getElementById("step2Title").textContent = `${dir} ${dirEn}`;
+
+    // 取得日期集合
     const dateSet = new Set(
-        allRows.filter(r=>String(r["去程 / 回程"]).trim()===dir).map(r=>String(r["日期"]).trim())
+        allRows
+            .filter(r => String(r["去程 / 回程"]).trim() === dir)
+            .map(r => String(r["日期"]).trim())
     );
+
     const cards = document.getElementById("dateCards");
-    cards.innerHTML="";
-    [...dateSet].forEach(dateRaw=>{
+    cards.innerHTML = "";
+
+    [...dateSet].forEach(dateRaw => {
+        const dateLabel = fmtDateLabel(dateRaw);
+        // ★ 統計當日可預約班次數量
+        const count = allRows.filter(r =>
+            String(r["去程 / 回程"]).trim() === dir &&
+            String(r["日期"]).trim() === dateRaw
+        ).length;
+
         const card = document.createElement("div");
-        card.className="card";
-        card.innerHTML = `<h3>${fmtDateLabel(dateRaw)}</h3>`;
-        card.onclick = ()=>selectDate(dateRaw);
+        card.className = "card";
+        card.innerHTML = `<h3>${dateLabel}</h3>
+                          <p style="color:var(--muted);font-size:14px;">
+                          可預約班次: ${count} / Schedules Available
+                          </p>`;
+        card.onclick = () => selectDate(dateRaw);
         cards.appendChild(card);
     });
+
     showStep(2);
 }
 
@@ -455,28 +472,48 @@ function selectDate(dateRaw){
     selectedDateRaw = String(dateRaw).trim();
     selectedDateLabel = fmtDateLabel(selectedDateRaw);
     document.getElementById("step3Title").textContent = `${selectedDirection} ${selectedDateLabel}`;
-    const isReturn = selectedDirection==="回程";
-    document.getElementById("step3Sub").innerHTML = isReturn?
+
+    const isReturn = selectedDirection === "回程";
+    document.getElementById("step3Sub").innerHTML = isReturn ?
         `<div class="station-info">下車站點 Drop-off: 福泰大飯店 Forte Hotel</div>
-         <div class="station-info">上車站點 Pick-up: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`:
+         <div class="station-info">上車站點 Pick-up: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>` :
         `<div class="station-info">上車站點 Pick-up: 福泰大飯店 Forte Hotel</div>
          <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`;
 
+    // 取得站點集合
     const stations = new Set(
-        allRows.filter(r=>String(r["去程 / 回程"]).trim()===selectedDirection && String(r["日期"]).trim()===selectedDateRaw)
-               .map(r=>String(r["站點"]).trim())
+        allRows
+            .filter(r =>
+                String(r["去程 / 回程"]).trim() === selectedDirection &&
+                String(r["日期"]).trim() === selectedDateRaw
+            )
+            .map(r => String(r["站點"]).trim())
     );
+
     const wrap = document.getElementById("stationCards");
-    wrap.innerHTML="";
-    [...stations].forEach(st=>{
+    wrap.innerHTML = "";
+
+    [...stations].forEach(st => {
+        // ★ 統計該站點剩餘可預約班次數量
+        const count = allRows.filter(r =>
+            String(r["去程 / 回程"]).trim() === selectedDirection &&
+            String(r["日期"]).trim() === selectedDateRaw &&
+            String(r["站點"]).trim() === st
+        ).length;
+
         const card = document.createElement("div");
-        card.className="card";
-        card.innerHTML=`<h3>${stationWithBreak(st)}</h3>`;
-        card.onclick=()=>selectStation(st);
+        card.className = "card";
+        card.innerHTML = `<h3>${stationWithBreak(st)}</h3>
+                          <p style="color:var(--muted);font-size:14px;">
+                          可預約班次: ${count} / Schedules Available
+                          </p>`;
+        card.onclick = () => selectStation(st);
         wrap.appendChild(card);
     });
+
     showStep(3);
 }
+
 
 function selectStation(stationRaw){
     selectedStationRaw = String(stationRaw).trim();
@@ -565,6 +602,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
