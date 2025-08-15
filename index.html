@@ -8,7 +8,7 @@
 :root{
     --orange:#ff7f2a;
     --bg:#fff6ef;
-    --text:#333;
+    --text:#000;
     --muted:#777;
     --card-shadow:0 2px 8px rgba(0,0,0,.1);
     --card-shadow-hover:0 6px 20px rgba(0,0,0,.2);
@@ -23,40 +23,23 @@ body{
     color:var(--text);
 }
 
-/* ====== step title ====== */
+/* ====== 步驟標題 ====== */
 .step-title-container {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     width: 100%;
 }
-.step-title {
-    font-size: 24px;
-    color: var(--text);
-    margin: 0 0 8px 0;
-    font-weight: 600;
-}
-.step-title-en {
-    font-size: 20px;
-    color: var(--muted);
-    font-weight: normal;
-}
-
-/* ====== title container (234步驟) ====== */
-.title-container {
-    margin-bottom: 18px;
-}
-.main-title {
+.step-title-container .title-line {
     font-size: 22px;
     font-weight: 600;
-    color: #000;
-    margin-bottom: 6px;
-    text-align: center;
+    color: var(--text);
+    margin: 4px 0;
 }
-.sub-title {
+.step-title-container .subtitle-line {
     font-size: 18px;
     font-weight: normal;
     color: var(--muted);
-    text-align: center;
+    margin: 2px 0 8px 0;
 }
 
 /* ====== steps ====== */
@@ -68,7 +51,7 @@ body{
     display:block;
 }
 
-/* ====== homepage container ====== */
+/* ====== 專用容器 ====== */
 .step1-active-container {
     min-height: 70vh;
     display: flex;
@@ -84,7 +67,6 @@ body{
     justify-content:center;
     flex-wrap:wrap;
     gap:20px;
-    margin-bottom:16px; /* 卡片與按鈕間距 */
 }
 
 /* ====== primary buttons ====== */
@@ -152,13 +134,14 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin-bottom:12px; /* 卡片與底部按鈕間距 */
 }
 .card:hover{
     transform:scale(1.03);
     box-shadow:var(--card-shadow-hover);
 }
 .card h3{
-    margin:0 0 8px;
+    margin:0 0 6px;
     color:var(--orange);
     font-size:20px;
 }
@@ -166,14 +149,6 @@ body{
     margin:6px 0 0;
     color:#666;
     font-weight:600;
-}
-
-/* ====== final buttons ====== */
-.final-buttons{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
 }
 
 /* ====== responsive ====== */
@@ -223,23 +198,27 @@ body{
     to{ transform:rotate(360deg); }
 }
 
-.header-block{ margin-bottom:8px; }
 .station-info{
-    margin:10px 0;
+    margin:6px 0;
     line-height:1.5;
+}
+.final-buttons{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
 }
 </style>
 </head>
 <body>
 
 <!-- Step 1: 選方向 -->
-<div id="step1" class="step">
+<div id="step1" class="step active">
     <div class="step1-active-container">
         <div class="step-title-container">
             <div class="step-title">查詢目前尚可預約班次</div>
             <div class="step-title-en">Currently Available Schedules</div>
         </div>
-        
         <div class="button-group">
             <button class="btn-primary" onclick="selectDirection('去程')">
                 去程<br>Departure (From Hotel)
@@ -253,9 +232,9 @@ body{
 
 <!-- Step 2: 選日期 -->
 <div id="step2" class="step">
-    <div class="title-container">
-        <div id="stepTitleZh" class="main-title"></div>
-        <div id="stepTitleEn" class="sub-title"></div>
+    <div class="step-title-container">
+        <div id="step2Title" class="title-line"></div>
+        <div id="step2Sub" class="subtitle-line">*請選擇日期 / Please select a date</div>
     </div>
     <div id="dateCards" class="card-group"></div>
     <div class="final-buttons">
@@ -266,9 +245,9 @@ body{
 
 <!-- Step 3: 選站點 -->
 <div id="step3" class="step">
-    <div class="title-container">
-        <div id="stepTitleZh" class="main-title"></div>
-        <div id="stepTitleEn" class="sub-title"></div>
+    <div class="step-title-container">
+        <div id="step3Title" class="title-line"></div>
+        <div id="step3Sub" class="subtitle-line"></div>
     </div>
     <div id="stationCards" class="card-group"></div>
     <div class="final-buttons">
@@ -279,11 +258,11 @@ body{
 
 <!-- Step 4: 選班次 -->
 <div id="step4" class="step">
-    <div class="title-container">
-        <div id="finalTitleZh" class="main-title header-block"></div>
-        <div id="finalMetaZh" class="sub-title header-block"></div>
-        <div id="finalTitleEn" class="main-title header-block"></div>
-        <div id="finalMetaEn" class="sub-title header-block"></div>
+    <div class="step-title-container">
+        <div id="finalTitleZh" class="title-line"></div>
+        <div id="finalMetaZh" class="subtitle-line"></div>
+        <div id="finalTitleEn" class="title-line"></div>
+        <div id="finalMetaEn" class="subtitle-line"></div>
     </div>
     <div id="scheduleCards" class="card-group"></div>
     <div class="final-buttons">
@@ -300,8 +279,8 @@ body{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
-const BOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScVlCdt19OAsW-nEdd-eKhm5zs6cZGtTyVEJ-_ZcoV52lKoKg/viewform";
+const API_URL = "https://script.google.com/macros/s/.../exec";
+const BOOK_URL = "https://docs.google.com/forms/d/e/.../viewform";
 
 let allRows = [];
 let selectedDirection = "";
@@ -311,6 +290,7 @@ let selectedStationRaw = "";
 let selectedStationZh = "";
 let selectedStationEn = "";
 
+/* ====== 工具 ====== */
 function fmtDateLabel(v){
     if(!v) return "";
     const s = String(v).trim();
@@ -334,64 +314,53 @@ function fmtTimeLabel(v){
         let [h,m] = colon.split(":");
         return `${String(h).padStart(2,"0")}:${String(m).slice(0,2).padStart(2,"0")}`;
     }
-    const num = Number(s);
-    if(!Number.isNaN(num) && num>=0 && num<2){
-        const mins = Math.round((num%1)*24*60);
-        const hh = String(Math.floor(mins/60)).padStart(2,"0");
-        const mm = String(mins%60).padStart(2,"0");
-        return `${hh}:${mm}`;
-    }
     return s;
 }
 function splitStationZhEn(name){
     const s = (name||"").trim();
     const i = s.search(/[A-Za-z]/);
-    if(i>0){
-        return { zh:s.slice(0,i).trim(), en:s.slice(i).trim() };
-    }
+    if(i>0) return { zh:s.slice(0,i).trim(), en:s.slice(i).trim() };
     return { zh:s, en:"" };
 }
 function stationWithBreak(name){
     const {zh,en} = splitStationZhEn(name);
     return en ? `${zh}\n${en}` : zh;
 }
-
 function showStep(n){
     document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
     document.getElementById(`step${n}`).classList.add("active");
 }
 
+/* ====== 資料 ====== */
 async function loadData(){
-    const loading = document.getElementById("loading");
-    loading.style.display = "flex";
+    document.getElementById("loading").style.display="flex";
     try{
         const res = await fetch(API_URL);
         const raw = await res.json();
         allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
         document.getElementById("step1").classList.add("active");
     }catch(e){
-        alert("資料讀取中 / Loading data: " + e.message);
+        alert("資料讀取中 / Loading data: "+e.message);
     }finally{
-        loading.style.display="none";
+        document.getElementById("loading").style.display="none";
     }
 }
 
+/* ====== 流程 ====== */
 function selectDirection(dir){
     selectedDirection = dir;
-    const dirEn = dir==="回程"?"Return (To Hotel)":"Departure (From Hotel)";
+    document.getElementById("step2Title").textContent = `方向: ${dir}`;
+    document.getElementById("step2Sub").textContent = "*請選擇日期 / Please select a date";
 
-    document.getElementById("stepTitleZh").textContent = `方向: ${dir}`;
-    document.getElementById("stepTitleEn").textContent = `Direction: ${dirEn}`;
-
-    const dateSet = new Set(
-        allRows.filter(r=>String(r["去程 / 回程"]).trim()===dir).map(r=>String(r["日期"]).trim())
+    const dateSet = new Set(allRows.filter(r=>String(r["去程 / 回程"]).trim()===dir)
+        .map(r=>String(r["日期"]).trim())
     );
     const cards = document.getElementById("dateCards");
     cards.innerHTML="";
     [...dateSet].forEach(dateRaw=>{
         const card = document.createElement("div");
         card.className="card";
-        card.innerHTML = `<h3>${fmtDateLabel(dateRaw)}</h3>`;
+        card.innerHTML = `<h3>日期: ${fmtDateLabel(dateRaw)}</h3>`;
         card.onclick = ()=>selectDate(dateRaw);
         cards.appendChild(card);
     });
@@ -401,22 +370,21 @@ function selectDirection(dir){
 function selectDate(dateRaw){
     selectedDateRaw = String(dateRaw).trim();
     selectedDateLabel = fmtDateLabel(selectedDateRaw);
-
-    document.getElementById("stepTitleZh").textContent = `日期: ${selectedDateLabel}`;
-    document.getElementById("stepTitleEn").textContent = `Date: ${selectedDateLabel}`;
+    document.getElementById("step3Title").textContent = `方向: ${selectedDirection}`;
+    document.getElementById("step3Sub").textContent = `日期: ${selectedDateLabel}`;
 
     const isReturn = selectedDirection==="回程";
-    document.getElementById("stationCards").innerHTML = "";
-    const stations = new Set(
-        allRows.filter(r=>String(r["去程 / 回程"]).trim()===selectedDirection && String(r["日期"]).trim()===selectedDateRaw)
-               .map(r=>String(r["站點"]).trim())
+    const stations = new Set(allRows.filter(r=>String(r["去程 / 回程"]).trim()===selectedDirection && String(r["日期"]).trim()===selectedDateRaw)
+        .map(r=>String(r["站點"]).trim())
     );
-    stations.forEach(st=>{
+    const wrap = document.getElementById("stationCards");
+    wrap.innerHTML="";
+    [...stations].forEach(st=>{
         const card = document.createElement("div");
         card.className="card";
         card.innerHTML=`<h3>${stationWithBreak(st)}</h3>`;
         card.onclick=()=>selectStation(st);
-        document.getElementById("stationCards").appendChild(card);
+        wrap.appendChild(card);
     });
     showStep(3);
 }
@@ -432,24 +400,21 @@ function selectStation(stationRaw){
     const zhBoard = selectedDirection==="回程" ? `上車站點: ${selectedStationZh||"（未提供）"}` : `上車站點: 福泰大飯店`;
     const zhDrop  = selectedDirection==="回程" ? `下車站點: 福泰大飯店` : `下車站點: ${selectedStationZh||"（未提供）"}`;
 
-    document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
-    document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
+    document.getElementById("finalTitleZh").textContent = `方向: ${zhDir}`;
+    document.getElementById("finalMetaZh").textContent = `日期: ${selectedDateLabel}\n${zhBoard}\n${zhDrop}`;
 
     const enBoard = selectedDirection==="回程" ? `Boarding: ${selectedStationEn||selectedStationZh||"N/A"}` : `Boarding: Forte Hotel`;
     const enDrop  = selectedDirection==="回程" ? `Drop-off: Forte Hotel` : `Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
-
-    document.getElementById("finalTitleEn").textContent = `${enDir} ${selectedDateLabel}`;
-    document.getElementById("finalMetaEn").innerHTML = `${enBoard}<br>${enDrop}`;
+    document.getElementById("finalTitleEn").textContent = `${enDir}`;
+    document.getElementById("finalMetaEn").textContent = `${selectedDateLabel}\n${enBoard}\n${enDrop}`;
 
     const list = allRows.filter(r => 
         String(r["去程 / 回程"]).trim() === selectedDirection &&
         String(r["日期"]).trim() === selectedDateRaw &&
         String(r["站點"]).trim() === selectedStationRaw
     );
-
     const wrap = document.getElementById("scheduleCards");
     wrap.innerHTML = "";
-
     list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
         const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
@@ -462,6 +427,7 @@ function selectStation(stationRaw){
     showStep(4);
 }
 
+/* ====== 控制鈕 ====== */
 function goBack(step){ showStep(step); }
 function restart(){
     selectedDirection="";
@@ -476,22 +442,20 @@ function restart(){
     loadData();
 }
 
+/* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async ()=>{
     await loadData();
-
-    const REFRESH_INTERVAL = 15 * 60 * 1000;
     setInterval(async ()=>{
-        try{
+        try {
             const res = await fetch(API_URL);
             const raw = await res.json();
             allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
             console.log("資料已靜默刷新", new Date().toLocaleTimeString());
-        }catch(e){
+        } catch(e){
             console.warn("靜默刷新失敗:", e.message);
         }
-    }, REFRESH_INTERVAL);
+    }, 15*60*1000);
 });
 </script>
-
 </body>
 </html>
