@@ -8,7 +8,7 @@
 :root{
     --orange:#ff7f2a;
     --bg:#fff6ef;
-    --text:#000;
+    --text:#333;
     --muted:#777;
     --card-shadow:0 2px 8px rgba(0,0,0,.1);
     --card-shadow-hover:0 6px 20px rgba(0,0,0,.2);
@@ -23,23 +23,22 @@ body{
     color:var(--text);
 }
 
-/* ====== 步驟標題 ====== */
+/* ====== 新增首頁標題樣式 ====== */
 .step-title-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     width: 100%;
 }
-.step-title-container .title-line {
-    font-size: 22px;
-    font-weight: 600;
+.step-title {
+    font-size: 24px;
     color: var(--text);
-    margin: 4px 0;
+    margin: 0 0 8px 0;
+    font-weight: 600;
 }
-.step-title-container .subtitle-line {
-    font-size: 18px;
-    font-weight: normal;
+.step-title-en {
+    font-size: 20px;
     color: var(--muted);
-    margin: 2px 0 8px 0;
+    font-weight: normal;
 }
 
 /* ====== steps ====== */
@@ -51,7 +50,7 @@ body{
     display:block;
 }
 
-/* ====== 專用容器 ====== */
+/* ====== 首頁專用容器 ====== */
 .step1-active-container {
     min-height: 70vh;
     display: flex;
@@ -134,14 +133,13 @@ body{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom:12px; /* 卡片與底部按鈕間距 */
 }
 .card:hover{
     transform:scale(1.03);
     box-shadow:var(--card-shadow-hover);
 }
 .card h3{
-    margin:0 0 6px;
+    margin:0 0 8px;
     color:var(--orange);
     font-size:20px;
 }
@@ -151,8 +149,59 @@ body{
     font-weight:600;
 }
 
+/* ====== titles ====== */
+.title-container {
+    margin-bottom: 18px;
+}
+.title {
+    font-size: 22px;
+    color: #000;
+    margin: 6px 0;
+    font-weight: 600;
+}
+.subtitle {
+    font-size: 18px;
+    color: #000;
+    margin: 6px 0;
+    font-weight: normal;
+}
+.title-en {
+    color: #000;
+    font-size: 22px;
+    font-weight: 600;
+}
+.subtitle-en {
+    color: #000;
+    font-size: 18px;
+    font-weight: normal;
+}
+
 /* ====== responsive ====== */
+/* 手機版 (max-width: 768px) */
 @media (max-width: 768px) {
+    /* 標題置左 */
+    .title-container {
+        text-align: left;
+        padding: 0 10px;
+    }
+    .step-title-container {
+        padding: 0 15px;
+    }
+
+    /* 資訊列置左 */
+    .info-line {
+        display: block;
+        text-align: left;
+        margin-bottom: 8px;
+    }
+    .info-label {
+        display: inline-block;
+        min-width: 100px;
+        text-align: right;
+        margin-right: 5px;
+    }
+
+    /* 最終步驟按鈕調整 */
     .final-buttons {
         flex-direction: column;
         align-items: center;
@@ -162,7 +211,21 @@ body{
         max-width: 280px;
     }
 }
+
+/* 桌機版 (min-width: 769px) */
 @media (min-width: 769px) {
+    /* 標題置中 */
+    .title-container {
+        text-align: center;
+    }
+    .step-title-container {
+        text-align: center;
+    }
+    .info-line {
+        text-align: center;
+    }
+
+    /* 最終步驟按鈕排列 */
     .final-buttons {
         flex-direction: row;
         justify-content: center;
@@ -198,27 +261,30 @@ body{
     to{ transform:rotate(360deg); }
 }
 
-.station-info{
-    margin:6px 0;
-    line-height:1.5;
-}
+/* ====== header block spacing ====== */
+.header-block{ margin-bottom:8px; }
 .final-buttons{
     display:flex;
     gap:10px;
     justify-content:center;
     flex-wrap:wrap;
 }
+.station-info{
+    margin:10px 0;
+    line-height:1.5;
+}
 </style>
 </head>
 <body>
 
 <!-- Step 1: 選方向 -->
-<div id="step1" class="step active">
+<div id="step1" class="step">
     <div class="step1-active-container">
         <div class="step-title-container">
             <div class="step-title">查詢目前尚可預約班次</div>
             <div class="step-title-en">Currently Available Schedules</div>
         </div>
+        
         <div class="button-group">
             <button class="btn-primary" onclick="selectDirection('去程')">
                 去程<br>Departure (From Hotel)
@@ -232,12 +298,14 @@ body{
 
 <!-- Step 2: 選日期 -->
 <div id="step2" class="step">
-    <div class="step-title-container">
-        <div id="step2Title" class="title-line"></div>
-        <div id="step2Sub" class="subtitle-line">*請選擇日期 / Please select a date</div>
+    <div class="title-container">
+        <div id="step2Title" class="title"></div>
+        <div class="subtitle" style="color: var(--muted);">
+            *請選擇日期 / Please select a date
+        </div>
     </div>
     <div id="dateCards" class="card-group"></div>
-    <div class="final-buttons">
+    <div style="margin-top:16px; text-align:center;">
         <button class="btn" onclick="goBack(1)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
     </div>
@@ -245,12 +313,12 @@ body{
 
 <!-- Step 3: 選站點 -->
 <div id="step3" class="step">
-    <div class="step-title-container">
-        <div id="step3Title" class="title-line"></div>
-        <div id="step3Sub" class="subtitle-line"></div>
+    <div class="title-container">
+        <div id="step3Title" class="title"></div>
+        <div id="step3Sub" class="subtitle"></div>
     </div>
     <div id="stationCards" class="card-group"></div>
-    <div class="final-buttons">
+    <div style="margin-top:16px; text-align:center;">
         <button class="btn" onclick="goBack(2)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
     </div>
@@ -258,13 +326,13 @@ body{
 
 <!-- Step 4: 選班次 -->
 <div id="step4" class="step">
-    <div class="step-title-container">
-        <div id="finalTitleZh" class="title-line"></div>
-        <div id="finalMetaZh" class="subtitle-line"></div>
-        <div id="finalTitleEn" class="title-line"></div>
-        <div id="finalMetaEn" class="subtitle-line"></div>
+    <div class="title-container">
+        <div id="finalTitleZh" class="title header-block"></div>
+        <div id="finalMetaZh" class="subtitle header-block"></div>
+        <div id="finalTitleEn" class="title title-en header-block"></div>
+        <div id="finalMetaEn" class="subtitle subtitle-en header-block"></div>
     </div>
-    <div id="scheduleCards" class="card-group"></div>
+    <div id="scheduleCards" class="card-group" style="margin-top:10px;"></div>
     <div class="final-buttons">
         <button class="btn" onclick="goBack(3)">← 返回 / Back</button>
         <button class="btn" onclick="restart()">↺ 重新查詢 / Restart</button>
@@ -279,9 +347,11 @@ body{
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/.../exec";
-const BOOK_URL = "https://docs.google.com/forms/d/e/.../viewform";
+/* ====== 配置 ====== */
+const API_URL = "https://script.google.com/macros/s/AKfycbwSdpog6sJH9OerAUj9W7BesGHj4y2X9Jc0t1CBDM6iD9kzQYFn4iHc3mJUuO9q87Ke/exec";
+const BOOK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScVlCdt19OAsW-nEdd-eKhm5zs6cZGtTyVEJ-_ZcoV52lKoKg/viewform";
 
+/* ====== 狀態 ====== */
 let allRows = [];
 let selectedDirection = "";
 let selectedDateRaw = "";
@@ -290,7 +360,7 @@ let selectedStationRaw = "";
 let selectedStationZh = "";
 let selectedStationEn = "";
 
-/* ====== 工具 ====== */
+/* ====== 工具函數 ====== */
 function fmtDateLabel(v){
     if(!v) return "";
     const s = String(v).trim();
@@ -305,6 +375,7 @@ function fmtDateLabel(v){
     }
     return s;
 }
+
 function fmtTimeLabel(v){
     if(v===null||v===undefined) return "";
     const s = String(v).trim();
@@ -314,53 +385,66 @@ function fmtTimeLabel(v){
         let [h,m] = colon.split(":");
         return `${String(h).padStart(2,"0")}:${String(m).slice(0,2).padStart(2,"0")}`;
     }
+    const num = Number(s);
+    if(!Number.isNaN(num) && num>=0 && num<2){
+        const mins = Math.round((num%1)*24*60);
+        const hh = String(Math.floor(mins/60)).padStart(2,"0");
+        const mm = String(mins%60).padStart(2,"0");
+        return `${hh}:${mm}`;
+    }
     return s;
 }
+
 function splitStationZhEn(name){
     const s = (name||"").trim();
     const i = s.search(/[A-Za-z]/);
-    if(i>0) return { zh:s.slice(0,i).trim(), en:s.slice(i).trim() };
+    if(i>0){
+        return { zh:s.slice(0,i).trim(), en:s.slice(i).trim() };
+    }
     return { zh:s, en:"" };
 }
+
 function stationWithBreak(name){
     const {zh,en} = splitStationZhEn(name);
     return en ? `${zh}\n${en}` : zh;
 }
+
+/* ====== UI ====== */
 function showStep(n){
     document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
     document.getElementById(`step${n}`).classList.add("active");
 }
 
-/* ====== 資料 ====== */
+/* ====== 資料載入 ====== */
 async function loadData(){
-    document.getElementById("loading").style.display="flex";
+    const loading = document.getElementById("loading");
+    loading.style.display = "flex";
     try{
         const res = await fetch(API_URL);
         const raw = await res.json();
         allRows = raw.filter(r=>r["去程 / 回程"] && r["日期"] && r["班次"] && r["站點"]);
         document.getElementById("step1").classList.add("active");
     }catch(e){
-        alert("資料讀取中 / Loading data: "+e.message);
+        alert("資料讀取中 / Loading data: " + e.message);
     }finally{
-        document.getElementById("loading").style.display="none";
+        loading.style.display="none";
     }
 }
 
 /* ====== 流程 ====== */
 function selectDirection(dir){
     selectedDirection = dir;
-    document.getElementById("step2Title").textContent = `方向: ${dir}`;
-    document.getElementById("step2Sub").textContent = "*請選擇日期 / Please select a date";
-
-    const dateSet = new Set(allRows.filter(r=>String(r["去程 / 回程"]).trim()===dir)
-        .map(r=>String(r["日期"]).trim())
+    const dirEn = dir==="回程"?"Return (To Hotel)":"Departure (From Hotel)";
+    document.getElementById("step2Title").textContent = `${dir} ${dirEn}`;
+    const dateSet = new Set(
+        allRows.filter(r=>String(r["去程 / 回程"]).trim()===dir).map(r=>String(r["日期"]).trim())
     );
     const cards = document.getElementById("dateCards");
     cards.innerHTML="";
     [...dateSet].forEach(dateRaw=>{
         const card = document.createElement("div");
         card.className="card";
-        card.innerHTML = `<h3>日期: ${fmtDateLabel(dateRaw)}</h3>`;
+        card.innerHTML = `<h3>${fmtDateLabel(dateRaw)}</h3>`;
         card.onclick = ()=>selectDate(dateRaw);
         cards.appendChild(card);
     });
@@ -370,12 +454,17 @@ function selectDirection(dir){
 function selectDate(dateRaw){
     selectedDateRaw = String(dateRaw).trim();
     selectedDateLabel = fmtDateLabel(selectedDateRaw);
-    document.getElementById("step3Title").textContent = `方向: ${selectedDirection}`;
-    document.getElementById("step3Sub").textContent = `日期: ${selectedDateLabel}`;
-
+    document.getElementById("step3Title").textContent = `${selectedDirection} ${selectedDateLabel}`;
     const isReturn = selectedDirection==="回程";
-    const stations = new Set(allRows.filter(r=>String(r["去程 / 回程"]).trim()===selectedDirection && String(r["日期"]).trim()===selectedDateRaw)
-        .map(r=>String(r["站點"]).trim())
+    document.getElementById("step3Sub").innerHTML = isReturn?
+        `<div class="station-info">下車站點 Drop-off: 福泰大飯店 Forte Hotel</div>
+         <div class="station-info">上車站點 Boarding: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`:
+        `<div class="station-info">上車站點 Boarding: 福泰大飯店 Forte Hotel</div>
+         <div class="station-info">下車站點 Drop-off: <span style="color: var(--muted);">*請選擇站點 / Please select</span></div>`;
+
+    const stations = new Set(
+        allRows.filter(r=>String(r["去程 / 回程"]).trim()===selectedDirection && String(r["日期"]).trim()===selectedDateRaw)
+               .map(r=>String(r["站點"]).trim())
     );
     const wrap = document.getElementById("stationCards");
     wrap.innerHTML="";
@@ -400,21 +489,25 @@ function selectStation(stationRaw){
     const zhBoard = selectedDirection==="回程" ? `上車站點: ${selectedStationZh||"（未提供）"}` : `上車站點: 福泰大飯店`;
     const zhDrop  = selectedDirection==="回程" ? `下車站點: 福泰大飯店` : `下車站點: ${selectedStationZh||"（未提供）"}`;
 
-    document.getElementById("finalTitleZh").textContent = `方向: ${zhDir}`;
-    document.getElementById("finalMetaZh").textContent = `日期: ${selectedDateLabel}\n${zhBoard}\n${zhDrop}`;
+    document.getElementById("finalTitleZh").textContent = `${zhDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaZh").innerHTML = `${zhBoard}<br>${zhDrop}`;
 
     const enBoard = selectedDirection==="回程" ? `Boarding: ${selectedStationEn||selectedStationZh||"N/A"}` : `Boarding: Forte Hotel`;
     const enDrop  = selectedDirection==="回程" ? `Drop-off: Forte Hotel` : `Drop-off: ${selectedStationEn||selectedStationZh||"N/A"}`;
-    document.getElementById("finalTitleEn").textContent = `${enDir}`;
-    document.getElementById("finalMetaEn").textContent = `${selectedDateLabel}\n${enBoard}\n${enDrop}`;
+
+    document.getElementById("finalTitleEn").textContent = `${enDir} ${selectedDateLabel}`;
+    document.getElementById("finalMetaEn").innerHTML = `${enBoard}<br>${enDrop}`;
 
     const list = allRows.filter(r => 
         String(r["去程 / 回程"]).trim() === selectedDirection &&
         String(r["日期"]).trim() === selectedDateRaw &&
         String(r["站點"]).trim() === selectedStationRaw
     );
+
     const wrap = document.getElementById("scheduleCards");
     wrap.innerHTML = "";
+
+    // 這裡的卡片不再有跳轉事件
     list.forEach(r => {
         const timeLabel = fmtTimeLabel(r["班次"]);
         const availText = String(r["可預約人數"] || r["可預約 / Available"] || "").trim();
@@ -427,9 +520,11 @@ function selectStation(stationRaw){
     showStep(4);
 }
 
+
 /* ====== 控制鈕 ====== */
 function goBack(step){ showStep(step); }
 function restart(){
+    // 重置選擇狀態
     selectedDirection="";
     selectedDateRaw="";
     selectedDateLabel="";
@@ -437,15 +532,24 @@ function restart(){
     selectedStationZh="";
     selectedStationEn="";
     allRows=[];
+
+    // 顯示 loading 畫面
     document.getElementById("loading").style.display = "flex";
+
+    // 隱藏所有步驟
     document.querySelectorAll(".step").forEach(el=>el.classList.remove("active"));
+
+    // 重新抓取資料
     loadData();
 }
 
 /* ====== 啟動 ====== */
 document.addEventListener("DOMContentLoaded", async ()=>{
     await loadData();
-    setInterval(async ()=>{
+
+    // ====== 靜默刷新 ======
+    const REFRESH_INTERVAL = 15 * 60 * 1000; // 15分鐘
+    async function silentRefresh(){
         try {
             const res = await fetch(API_URL);
             const raw = await res.json();
@@ -454,8 +558,14 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         } catch(e){
             console.warn("靜默刷新失敗:", e.message);
         }
-    }, 15*60*1000);
+    }
+    // 每 15 分鐘自動刷新
+    setInterval(silentRefresh, REFRESH_INTERVAL);
 });
 </script>
 </body>
 </html>
+
+
+
+
